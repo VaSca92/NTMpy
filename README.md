@@ -26,6 +26,7 @@ We consider:
 The equation under consideration is: 
 
  <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationDark.png?raw=true#gh-dark-mode-only" width="960" height="120" />
+  <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationLight.png?raw=true#gh-light-mode-only" width="960" height="120" />
  
  where *C* = specific heat, *k* = conductivity, *G* is the coupling constant between the systems (Electrons, Lattice and Spin)
   <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE.png?raw=true#gh-dark-mode-only" width="70" height="20" /> and <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL.png?raw=true#gh-dark-mode-only" width="70" height="20" /> 
