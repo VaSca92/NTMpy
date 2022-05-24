@@ -28,7 +28,7 @@ The equation under consideration is:
  <img src="https://github.com/udcm-su/heat-diffusion-1D/blob/master/Pictures/Equation.PNG" width="750" height="120" />
  
  where *C* = specific heat, *k* = conductivity, *G* is the coupling constant between the two systems (Electron and Lattice)
-  ![phiE](https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE.png?raw=true) and <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE.png?raw=true" width="30" height="20" /> 
+  <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE.png?raw=true" width="30" height="20" /> and <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL.png?raw=true" width="30" height="20" /> 
   are the respective temperatures of the electron lattice abd spin system with respect to space *x* and time *t*. The superscripts  *L* and *E* indicate whether a parameter belongs to the electron (E) lattice (L) or spin (S) system and the sub index *i* denotes to which layer the parameter belongs.
   
   A sketch of the model: 
