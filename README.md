@@ -1,3 +1,5 @@
+## This is not the main page of this code, please go check the principal [repository](https://github.com/udcm-su/NTMpy)
+
 # NTMpy - N-Temperature Model solver
 
 
