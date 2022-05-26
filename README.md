@@ -116,7 +116,7 @@ This is a project from the Ultrafast Condensed Matter physics groupe in Stockhol
 * [Vivek Unikandanunni](https://github.com/VivekUUnni)
 * [UDCM Group of SU](http://udcm.fysik.su.se/)
 
-You can directly contact us via mail: [Lukas Alber](mailto:lukas.alber@fysik.su.se)
+You can directly contact us via mail: [Lukas Alber](mailto:lukas.alber@fysik.su.se), [Valentino Scalera](mailto:valentino.scalera@uniparthenope.it)
 
 
 #### Cite 
