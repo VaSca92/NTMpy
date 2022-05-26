@@ -7,7 +7,7 @@
 
 #### To update to lates version:     `pip install --upgrade NTMpy`
 
-Information and citation refere to [NTMpy: An open source package for solving coupled parabolic differential equations in the framework of the three-temperature model](https://www.sciencedirect.com/science/article/pii/S0010465521001028?via%3Dihub) paper.
+Information and citation refer to [NTMpy: An open source package for solving coupled parabolic differential equations in the framework of the three-temperature model](https://www.sciencedirect.com/science/article/pii/S0010465521001028?via%3Dihub) paper.
 
 Further information on the solver package itself can be found here: [NTMpy](https://github.com/udcm-su/heat-diffusion-1D/tree/master/NTMpy).
 
