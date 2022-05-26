@@ -26,11 +26,18 @@ We consider:
 The equation under consideration is: 
 
  <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationDark.png?raw=true#gh-dark-mode-only" width="960" height="120" />
-  <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationLight.png?raw=true#gh-light-mode-only" width="960" height="120" />
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationLight.png?raw=true#gh-light-mode-only" width="960" height="120" />
  
- where *C* = specific heat, *k* = conductivity, *G* is the coupling constant between the systems (Electrons, Lattice and Spin)
-  <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE.png?raw=true#gh-dark-mode-only" width="70" height="20" /> and <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL.png?raw=true#gh-dark-mode-only" width="70" height="20" /> 
-  are the respective temperatures of the electron lattice abd spin system with respect to space *x* and time *t*. The superscripts  *L* and *E* indicate whether a parameter belongs to the electron (E) lattice (L) or spin (S) system and the sub index *i* denotes to which layer the parameter belongs.
+ where </br>
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cap_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cap_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the specific heat </br>
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cond_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cond_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the conductivity </br>
+<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/coup_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/coup_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the coupling constant between the systems (Electrons, Lattice and Spin) </br>
+<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE_light.png?raw=true#gh-light-mode-only" width="70" height="20" />, 
+<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL_light.png?raw=true#gh-light-mode-only" width="70" height="20" /> and 
+<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiS_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiS_light.png?raw=true#gh-light-mode-only" width="70" height="20" />
+are the respective temperatures of the electrons, lattice and spin system, functions to space *x* and time *t*.
+
+The superscripts  *L* and *E* indicate whether a parameter belongs to the electron (E) lattice (L) or spin (S) system and the sub index *i* denotes to which layer the parameter belongs.
   
   A sketch of the model: 
   
@@ -100,7 +107,7 @@ For example, `phi[0]` is the electron temperature, `phi[1]` is the lattice tempe
 `phi[0][100][10]` is the temperature of the electron system after 100 time steps in the 10th point of the grid.
 
 #### Documentation
-Complete documentation and example sessions can be found in the [Wiki](https://github.com/udcm-su/heat-diffusion-1D/wiki)
+Complete documentation and example sessions can be found in the [Wiki](https://github.com/udcm-su/heat-diffusion-1D/wiki) and on the [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028).
 
 #### With: 
 This is a project from the Ultrafast Condensed Matter physics groupe in Stockholm. The main contributors are: 
@@ -113,7 +120,7 @@ You can directly contact us via mail: [Lukas Alber](mailto:lukas.alber@fysik.su.
 
 
 #### Cite 
-
+Please, cite the reference [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028):</br>
 `@article{alber2020ntmpy,
     title={NTMpy: An open source package for solving coupled parabolic differential equations in the framework of the three-temperature model},
     author = {Lukas Alber and Valentino Scalera and Vivek Unikandanunni and Daniel Schick and Stefano Bonetti},
