@@ -26,13 +26,14 @@ class source(object):
         self.angle      = [0]
         self.refraction = [ ]
         self.absorption = [ ]
+        
         self.thickness  = [ ]
 
         self.Tn = []
         self.Rn = []
         self.Mn = []
         self.M = np.eye(2)
-        
+
         self.computed = False
 
 # =============================================================================
@@ -51,7 +52,7 @@ class source(object):
 # =============================================================================
 #
 # -----------------------------------------------------------------------------
-    def matrix(self, x, t, interfaces):     
+    def matrix(self, x, t, interfaces):
 
         xmg,tmg = np.meshgrid(x,t)
         if self.type_t.lower() in ["gaussian","gauss"]:
@@ -73,7 +74,7 @@ class source(object):
         S_matrix = self.peak * fun_x * fun_t
         #Clear for boundary conditions in Simulation core
         S_matrix[:,0] = 0; S_matrix[:,-1] = 0
-        
+
         self.stored = S_matrix
         return S_matrix
 
@@ -85,7 +86,7 @@ class source(object):
         self.Tn = []
         self.Rn = []
         self.Mn = []
-        self.M = np.eye(2)        
+        self.M = np.eye(2)
 
         layer_num = len(self.thickness)
         if len(self.refraction) != layer_num or len(self.absorption) != layer_num:

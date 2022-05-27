@@ -1,17 +1,18 @@
-from Sim2T import simulation
-from Visual import *
+from Sim2T import Sim2T
+import Visual as vs
 from Source import source
-
+import numpy as np
+'''
 # Case 1 ======================================================================
 
 s = source()
-#s.type_x = "beerlambert"
 s.absorption = [1e-8, 1e-8]
 s.refraction = [1, 1]
 s.time = 2e-12
 s.delay = 2e-12
+s.angle[0] = np.pi/4
 
-sim = simulation()
+sim = Sim2T()
 #add layers (Length,conductivity,heatCapacity,rho,coupling)
 sim.addLayer(40e-9, [ 6,  1], [lambda T: .112*T, 450], 6500, 5e17, 12)
 sim.addLayer(80e-9, [12,  1], [lambda T: .025*T, 730], 5100, 5e17, 12)
@@ -25,15 +26,16 @@ sim.final_time = 10e-12
 #print(sim)
 
 t = np.arange(sim.start_time, sim.final_time, sim.time_step)
-#compare(x,t,phi[0],phi[1], 2)
+#vs.compare(x,t,phi[0],phi[1], 2)
 
-spaceVStime(x, t, phi[0])
-#surface(x,t,s.matrix(x,t,sim.length))
+#vs.spaceVStime(x, t, phi[0])
+vs.surface(x,t,s.matrix(x,t,sim.length))
 #print(phi[0])
 # -----------------------------------------------------------------------------
-
-# Case 2 ======================================================================
 '''
+'''
+# Case 2 ======================================================================
+
 L  = 5e-6      # Length of the Grating
 Ce = 2e+4      # Specific Heat Electrons
 Cl = 2.5e6     # Specific Heat Lattice
@@ -41,7 +43,7 @@ ke = 3.2e+1    # Conductivity Electrons
 kl = 2.75      # Conductivity Lattica
 G  = 3e+16     #Exchange constant
 # Define the Object
-sim = simulation()
+sim = Sim2T()
 # Define Media
 sim.addLayer(L, [ke,kl], [Ce, Cl], 1, G)
 # Define Initial Condition
@@ -85,17 +87,17 @@ g1 = - (-B+np.sqrt(delta))/2
 print("Analytic value of the time constant:    " + str(1/g1))
 print("Numeric (1) value of the time constant: " + str(-1/g2[0]))
 print("Numeric (2) value of the time constant  " + str(-1/g3[0]))
-'''
+
 # -----------------------------------------------------------------------------
-
-
-# Case 3  ---------------------------------------------------------------------
 '''
+'''
+# Case 3  =====================================================================
+
 #Compute phi_E (matrix of temperature) and So_map (matrix of source) first
 Ce 	  = lambda Te: 0.112*Te
 Ce_prm = lambda Te: 0.5*0.112*Te**2
 # Sim2T
-sim = simulation()
+sim = Sim2T()
 sim.addLayer(1e-9, [1, 0], [Ce, 1], 1, 0)
 sim.final_time = 1e-9
 s = source()
@@ -112,5 +114,36 @@ So_int = np.trapz(So_map,x,axis = 1)
 plt.figure()
 plt.plot(t,Ce_int)
 plt.plot(t,So_int)
+
+# -----------------------------------------------------------------------------
 '''
+
+# Case 4 ======================================================================
+# Initialize source
+s = source() # default option, Gaussian pulse
+s.peak        = 1     # Energy per meter square
+s.time        = 2e-12 # Full Width Half Maximum (duration of the pulse)
+s.delay       = 2e-12 # time the maximum intensity hits
+s.refraction  = [1,1]
+s.absorption   = [1e-8,1e-8]
+
+# initialize simulation: ntm.simulation(number of temperatures, source)
+sim = Sim2T() # Default initial temperature: 300 Kelvin
+sim.setSource(s)
+
+# add material layers:
+# > non constant quantities are inserted as lambda functions
+# > if more temperature are used, conductivity and heat capacity are vectors
+# addlayer  ( Length, refractive index, conductivity, Heat Capacity, density, coupling)
+sim.addLayer( 30e-9, [ 8,  0], [lambda T: .112*T, 450], 6500, 6e17, 10) # first layer
+sim.addLayer( 80e-9, [24, 12], [lambda T: .025*T, 730], 5100, 6e17, 16) # second layer
+
+# set final simulation time (in seconds)
+sim.final_time = 50e-12
+
+# Run simulation
+[phi, x] = sim.run()
+
+
+
 # -----------------------------------------------------------------------------

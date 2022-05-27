@@ -11,13 +11,12 @@ from bspline import Bspline
 from bspline.splinelab import aptknt
 import time
 
-from Visual import *
 from Source import source
 
 # =============================================================================
 #
 # =============================================================================
-class simulation(object):
+class Sim2T(object):
 
 # =============================================================================
 #
@@ -80,6 +79,8 @@ class simulation(object):
         # Default Settings
         self.default_Ng = 12
         self.default_Np = 60
+        # Maximum Temperature Expected (used in time step evaluation)
+        self.burn = 2000
 
 # =============================================================================
 #
@@ -445,7 +446,7 @@ class simulation(object):
 # -----------------------------------------------------------------------------
     def stability(self, LSM):
         # Useful Constant
-        test       = np.linspace(270,2000,50)
+        test       = np.linspace(270, self.burn, 50)
         eigs       = np.zeros([len(LSM)])
         for i in range(self.layers + 1):
             dim = len(LSM[i]); Z = np.zeros([dim,dim])
@@ -464,9 +465,6 @@ class simulation(object):
             # Evaluate the Eigenvalues
             eigs[i] = min(np.real(np.linalg.eig(StbMat)[0]))
             eigs[i] = min(eigs[i], -XE/.3, -XL/.3)
-            #print("Line 446-448")
-            #print(-1.9/min(np.real(np.linalg.eig(StbMat)[0])))
-            #print(-1.9/(-XE/.3))
         # Return the smallest time step
         return min(-1.9/eigs)
 
