@@ -52,35 +52,39 @@ class Sim2T(object):
         self.LBCV_L  = 0
         self.RBCV_L  = 0
         self.init_L  = 300
+        # Coupling
+        self.G = []
+        
         # Differentiation Matrices an Plot Matrix
         self.D0 = np.zeros([0,0])
         self.D1 = np.zeros([0,0])
         self.D2 = np.zeros([0,0])
         self.P0 = np.zeros([0,0])
-        # Coupling
-        self.G = []
-        # Indices of the equation type for the Electronic System
-        self.diffusionE = []
-        self.heat_flowE = []
-        self.continousE = []
-        # Indices of the equation type for the Lattice System
-        self.diffusionL = []
-        self.heat_flowL = []
-        self.continousL = []
-        # Incides of the interfaces and number of Layers
-        self.layers     = 0
-        self.interface = []
-        # Conductivity == 0
-        self.zeroE = [True]
-        self.zeroL = [True]
+        self.DL = []
+        self.DR = []
+        
         # Source
         self.source = source()
+        self.sourceset = False
         self.source.peak = 0
         # Default Settings
         self.default_Ng = 12
         self.default_Np = 60
         # Maximum Temperature Expected (used in time step evaluation)
         self.burn = 2000
+        
+
+        # Incides of the interfaces/material and number of Layers
+        self.layers = 0
+        self.interfaceE = []
+        self.diffusionE = []
+        self.interfaceL = []
+        self.diffusionL = []
+        self.layer_ind  = []
+        # Conductivity == 0
+        self.zeroE = []
+        self.zeroL = []
+        
 
 # =============================================================================
 #
@@ -141,6 +145,7 @@ class Sim2T(object):
 # -----------------------------------------------------------------------------
     def setSource(self, source, n = 1):
         self.source = source
+        self.sourceset = True
 
 
 # =============================================================================
@@ -181,18 +186,24 @@ class Sim2T(object):
         length     = self.length
         plt_points = self.plt_points
         grd_points = self.grd_points
-        interface  = [-1]
+        # Store layer and interface number
+        self.layers = len(self.length) - 1
+        # Indices of the Interface points
+        IFg  = np.append( 0, np.cumsum(grd_points) )
+        IFg -= np.arange( IFg.size )
+        IFp  = np.append( 0, np.cumsum(plt_points) )
+        IFp -= np.arange( IFp.size )
+        # Preallocate the Differentation Matrices
+        self.D0 = np.zeros([IFg[-1] + 1, IFg[-1] + 1])
+        self.D1 = np.zeros([IFg[-1] + 1, IFg[-1] + 1])
+        self.D2 = np.zeros([IFg[-1] + 1, IFg[-1] + 1])
+        self.P0 = np.zeros([IFp[-1] + 1, IFg[-1] + 1])
         # Select Order of the Spline (future expert setting)
         order = self.order
         # Layer Stability Matrix
         LSM = []
         # FOR each layer: Construct the Ai Matrices
         for i in range( len(length) - 1):
-            # Assign the Equation type
-            current = range( len(self.x), len(self.x) + grd_points[i] )
-            self.detect_id(i, list(current))
-            # Update Indices of the elements
-            interface.extend([interface[-1] + 1, interface[-1] + grd_points[i]])
             # Define Space Points
             x = np.linspace(length[i], length[i+1] , grd_points[i])
             y = np.linspace(length[i], length[i+1] , plt_points[i])
@@ -205,30 +216,31 @@ class Sim2T(object):
             D2L = basis.collmat(x, deriv_order = 2)
             P0L = basis.collmat(y, deriv_order = 0)
             # Correct BSpline Package Bug
-            D0L[-1,-1] = 1; P0L[-1,-1] = 1; D1L[-1] = -np.flip(D1L[0],0)
+            D0L[-1,-1] = 1; P0L[-1,-1] = 1;
+            D1L[-1] = -np.flip(D1L[0],0)
+            D2L[-1] = +np.flip(D2L[0],0)
             # Matrices for the Stablity
             LSM.append(np.array(np.dot(D2L,np.linalg.inv(D0L))))
-            # Zero Matrices for the Concatenation of Diagonal Block Matrices
-            ZHD = np.zeros([len(self.D0), len(D0L)])
-            ZVD = np.zeros([len(D0L), len(self.D0)])
-            ZHP = np.zeros([len(self.P0), len(D0L)])
-            ZVP = np.zeros([len(P0L), len(self.D0)])
             # Total Differentiation and Plot Matrices
-            self.D0 = np.block([[self.D0, ZHD],[ZVD,D0L]])
-            self.D1 = np.block([[self.D1, ZHD],[ZVD,D1L]])
-            self.D2 = np.block([[self.D2, ZHD],[ZVD,D2L]])
-            self.P0 = np.block([[self.P0, ZHP],[ZVP,P0L]])
+            self.D0[ IFg[i] : IFg[i+1] + 1, IFg[i] : IFg[i+1] + 1] = D0L
+            self.D1[ IFg[i] : IFg[i+1] + 1, IFg[i] : IFg[i+1] + 1] = D1L
+            self.D2[ IFg[i] : IFg[i+1] + 1, IFg[i] : IFg[i+1] + 1] = D2L
+            self.P0[ IFp[i] : IFp[i+1] + 1, IFg[i] : IFg[i+1] + 1] = P0L
+            # Non derivable points
+            self.D1[ IFg[i+1], IFg[i+1]] = 0
+            self.D2[ IFg[i+1], IFg[i+1]] = 0
+            # Derivative from Left and Right
+            self.DL.append(D1L[ 0])
+            self.DR.append(D1L[-1])
             # Extend the Space Grid
-            self.x = np.append( self.x, x)
-            self.y = np.append( self.y, y)
-        self.interface = interface[2:-1]
-        self.layers    = round(len(self.interface)*0.5)
-        # Remove Equation dedicated to Boundary Condition
-        L = len(self.x) - 1
-        if 0 in self.heat_flowE: self.heat_flowE = self.heat_flowE[+1:]
-        if 0 in self.heat_flowL: self.heat_flowL = self.heat_flowL[+1:]
-        if L in self.heat_flowE: self.heat_flowE = self.heat_flowE[:-1]
-        if L in self.heat_flowL: self.heat_flowL = self.heat_flowL[:-1]
+            self.x = np.append( self.x[:-1], x)
+            self.y = np.append( self.y[:-1], y)
+        self.interfaceE = IFg
+        self.interfaceL = IFg
+        self.layer_ind  = np.vstack([ IFg[:-1] + 1, IFg[1:]]).transpose()
+        self.diffusionE = self.layer_ind.copy()
+        self.diffusionL = self.layer_ind.copy()
+        self.detect_id()
         # Calculate approximated Time steps
         self.dt_ext = self.stability(LSM)
 
@@ -236,30 +248,27 @@ class Sim2T(object):
 # =============================================================================
 #
 # -----------------------------------------------------------------------------
-    def detect_id(self, i, indices):
-        # Set indices for the Electronic System
-        if self.zeroE[i+1]:
-            self.diffusionE.append(indices[0:-1])
-        elif not(self.zeroE[i] or self.zeroE[i+1]):
-            self.continousE.append(indices[0])
-            self.diffusionE.append(indices[1:-1])
-            self.heat_flowE.append(indices[-1])
-        elif self.zeroE[i] and not self.zeroE[i+1]:
-            self.heat_flowE.append(indices[ 0])
-            self.diffusionE.append(indices[1:-1])
-            self.heat_flowE.append(indices[-1])
-        # Set indices for the Lattice System
-        if self.zeroL[i+1]:
-            self.diffusionL.append(indices[0:-1])
-        elif not(self.zeroL[i] or self.zeroL[i+1]):
-            self.continousL.append(indices[ 0])
-            self.diffusionL.append(indices[1:-2])
-            self.heat_flowL.append(indices[-1])
-        elif self.zeroL[i] and not self.zeroL[i+1]:
-            self.heat_flowL.append(indices[ 0])
-            self.diffusionL.append(indices[1:-2])
-            self.heat_flowL.append(indices[-1])
-
+    def detect_id(self):
+        
+        for i in range( len(self.zeroE) - 2, -1, -1):
+            if self.zeroE[i] and self.zeroE[i+1]:
+                self.interfaceE = np.delete(self.interfaceE, i)
+                self.diffusionE[ i+1, 0] -= 1
+        
+        if self.zeroE[ 0]:
+            self.diffusionE[ 0, 0] -= 1
+        if self.zeroE[-1]:
+            self.diffusionE[-1,-1] += 1
+        
+        for i in range( len(self.zeroL) - 2, -1, -1):
+            if self.zeroL[i] and self.zeroL[i+1]:
+                self.interfaceL = np.delete(self.interfaceL, i)
+                self.diffusionL[ i+1, 0] -= 1
+                
+        if self.zeroL[ 0]:
+            self.diffusionL[ 0, 0] -= 1
+        if self.zeroL[-1]:
+            self.diffusionL[ 0, 0] += 1
 
 # =============================================================================
 #
@@ -309,25 +318,28 @@ class Sim2T(object):
     def generate_matrix(self):
         # Matrics of Coefficient fot the Electron and Lattice System
         LHSE = self.D0.copy(); LHSL = self.D0.copy()
+        
         # Setting Boundary Condition Type
-        if self.LBCT_E == 1 and not self.zeroE[ 1]:
-            LHSE[ 0] = -self.D1[ 0].copy()
+        if self.LBCT_E == 1 and not self.zeroE[ 0]:
+            LHSE[ 0, :self.grd_points[ 0] ] = -self.DL[ 0].copy()
         if self.RBCT_E == 1 and not self.zeroE[-1]:
-            LHSE[-1] =  self.D1[-1].copy()
-        if self.LBCT_L == 1 and not self.zeroL[ 1]:
-            LHSL[ 0] = -self.D1[ 0].copy()
+            LHSE[-1, -self.grd_points[-1]:] =  self.DR[-1].copy()
+        if self.LBCT_L == 1 and not self.zeroL[ 0]:
+            LHSL[ 0, :self.grd_points[0] ] = -self.DL[ 0].copy()
         if self.RBCT_L == 1 and not self.zeroL[-1]:
-            LHSL[-1] =  self.D1[-1].copy()
-        for k in self.continousE: LHSE[ k, k-1] = 1; LHSE[ k, k] = -1
-        for k in self.continousL: LHSL[ k, k-1] = 1; LHSL[ k, k] = -1
-        # Create the matrix for the Interface Condition
-        HF = self.D1[self.interface]
-        return LHSE, LHSL, HF
+            LHSL[-1, -self.grd_points[-1]:] =  self.DR[-1].copy()
+        
+        LHSE[self.interfaceE[+1:-1]] = 0;
+        LHSL[self.interfaceL[+1:-1]] = 0;    
+        
+        return LHSE, LHSL
 
 # =============================================================================
 #
 # -----------------------------------------------------------------------------
     def run(self):
+        if not self.sourceset:
+            self.warning(4)
         # ---------------------------------------------------------------------
         # Setup Phase: Timestep evaluation, Source Generation,
         #              Boundary Condition prepared, Adjust Coupling
@@ -335,9 +347,8 @@ class Sim2T(object):
         self.build_geometry()
         # Load all the Geometry Matrices --------------------------------------
         # Rename some Instance Variables
-        Ng = self.grd_points
-        BCLL = 1 - self.zeroL[1]; BCLR = 1 - self.zeroL[-1]
-        BCEL = 1 - self.zeroE[1]; BCER = 1 - self.zeroE[-1]
+        BCEL = not self.zeroE[0]; BCER = not self.zeroE[-1]
+        BCLL = not self.zeroL[0]; BCLR = not self.zeroL[-1]
         # STABILITY EVALUATION ################################################
         # Calculating the preferred time step
         idealtimestep  = np.min(self.dt_ext)
@@ -353,7 +364,7 @@ class Sim2T(object):
         # Define the time vector
         self.t = np.arange(self.start_time, self.final_time, self.time_step)
         # Generate all the matrices ###########################################
-        LHSE, LHSL, HF     = self.generate_matrix()
+        LHSE, LHSL         = self.generate_matrix()
         BC_E, BC_L         = self.generate_BC()
         c_E, u_E, c_L, u_L = self.generate_init()
         # SOURCE GENERATION ###################################################
@@ -381,7 +392,9 @@ class Sim2T(object):
         # Set Initial Condition
         phi_E[0] = u_E; phi_L[0] = u_L
         # Identify Layer
-        P = np.cumsum([np.append([0], Ng[:-1]), Ng], axis=1).transpose().astype(int)
+        LI = self.layer_ind
+        DE = self.diffusionE
+        DL = self.diffusionL
         # HERE STARTS THE MAIN LOOP
         start_EL = time.time()
         for i in range(1,len(self.t)):
@@ -389,37 +402,39 @@ class Sim2T(object):
             phi0_E = np.dot(self.D0,c_E); phi0_L = np.dot(self.D0,c_L)
             phi1_E = np.dot(self.D1,c_E); phi1_L = np.dot(self.D1,c_L)
             phi2_E = np.dot(self.D2,c_E); phi2_L = np.dot(self.D2,c_L)
-            for j in range(len(P)):  # For every Layer
+            for j in range(len(DE)):  # For every Layer
                 # Conduction Heat Flow in the Electronic System
-                Flow_1E[P[j,0]:P[j,1]] = self.elec_Q[j](phi0_E[P[j,0]:P[j,1]])
-                Flow_2E[P[j,0]:P[j,1]] = self.elec_K[j](phi0_E[P[j,0]:P[j,1]])
-                Flow_1E[P[j,0]:P[j,1]] *= phi1_E[P[j,0]:P[j,1]]**2
-                Flow_2E[P[j,0]:P[j,1]] *= phi2_E[P[j,0]:P[j,1]]
+                Flow_1E[DE[j,0]:DE[j,1]] = self.elec_Q[j](phi0_E[DE[j,0]:DE[j,1]])
+                Flow_2E[DE[j,0]:DE[j,1]] = self.elec_K[j](phi0_E[DE[j,0]:DE[j,1]])
+                Flow_1E[DE[j,0]:DE[j,1]] *= phi1_E[DE[j,0]:DE[j,1]]**2
+                Flow_2E[DE[j,0]:DE[j,1]] *= phi2_E[DE[j,0]:DE[j,1]]
                 # Conduction Heat Flow in the Lattice System
-                Flow_1L[P[j,0]:P[j,1]] = self.latt_Q[j](phi0_L[P[j,0]:P[j,1]])
-                Flow_2L[P[j,0]:P[j,1]] = self.latt_K[j](phi0_L[P[j,0]:P[j,1]])
-                Flow_1L[P[j,0]:P[j,1]] *= phi1_L[P[j,0]:P[j,1]]**2
-                Flow_2L[P[j,0]:P[j,1]] *= phi2_L[P[j,0]:P[j,1]]
+                Flow_1L[DL[j,0]:DL[j,1]] = self.latt_Q[j](phi0_L[DL[j,0]:DL[j,1]])
+                Flow_2L[DL[j,0]:DL[j,1]] = self.latt_K[j](phi0_L[DL[j,0]:DL[j,1]])
+                Flow_1L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]**2
+                Flow_2L[DL[j,0]:DL[j,1]] *= phi2_L[DL[j,0]:DL[j,1]]
                 # Diffusion Equation
-                dphi_E[P[j,0]:P[j,1]] = Flow_1E[P[j,0]:P[j,1]] + Flow_2E[P[j,0]:P[j,1]] + self.G[j]*(phi0_L[P[j,0]:P[j,1]]-phi0_E[P[j,0]:P[j,1]]) + source[i,P[j,0]:P[j,1]]
-                dphi_L[P[j,0]:P[j,1]] = Flow_1L[P[j,0]:P[j,1]] + Flow_2L[P[j,0]:P[j,1]] + self.G[j]*(phi0_E[P[j,0]:P[j,1]]-phi0_L[P[j,0]:P[j,1]])
-                dphi_E[P[j,0]:P[j,1]] /= self.elec_C[j](phi0_E)[P[j,0]:P[j,1]]
-                dphi_L[P[j,0]:P[j,1]] /= self.latt_C[j](phi0_L)[P[j,0]:P[j,1]]
+                dphi_E[DE[j,0]:DE[j,1]] = Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j]*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] = Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j]*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
+                dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E)[DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_L)[DL[j,0]:DL[j,1]]
             # Apply Heat Conservation on surfaces
-            for k, j in enumerate(self.heat_flowE): # For every interface
+            for k, j in enumerate(self.interfaceE[1:-1]): # For every interface
                 # Calculate the Flux into and out from the interface
-                IFconL = self.elec_K[ k ](phi0_E[j])*HF[ 2*k ]
-                IFconR = self.elec_K[k+1](phi0_E[j])*HF[2*k+1]
+                IFconL = self.elec_K[ k ](phi0_E[j])*self.DR[ k ]
+                IFconR = self.elec_K[k+1](phi0_E[j])*self.DL[k+1]
                 # Electronic System
-                LHSE[j] = -IFconL
-                LHSE[j] += IFconR
-            for k, j in enumerate(self.heat_flowL):
+                LHSE[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
+                LHSE[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
+                LHSE[j, j] = IFconR[0] - IFconL[-1]
+            for k, j in enumerate(self.interfaceL[1:-1]):
                 # Calculate the Flux into and out from the interface
-                IFconL = self.latt_K[ k ](phi0_L[j])*HF[ 2*k ]
-                IFconR = self.latt_K[k+1](phi0_L[j])*HF[2*k+1]
+                IFconL = self.latt_K[ k ](phi0_L[j])*self.DR[ k ]
+                IFconR = self.latt_K[k+1](phi0_L[j])*self.DL[k+1]
                 # Lattice System
-                LHSL[j]  = -IFconL
-                LHSL[j]  += IFconR
+                LHSL[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
+                LHSL[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
+                LHSL[j, j] = IFconR[0] - IFconL[-1]
             # Applying Explicit Euler Method
             RHSE = phi0_E + self.time_step * dphi_E
             RHSL = phi0_L + self.time_step * dphi_L
@@ -428,8 +443,6 @@ class Sim2T(object):
             if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[-1])**RBCE
             if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_L[ 0])**LBCL
             if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_L[-1])**RBCL
-            RHSE[self.heat_flowE] = 0; RHSE[self.continousE] = 0
-            RHSL[self.heat_flowL] = 0; RHSL[self.continousL] = 0
             # Calculate the new value of the Temperature
             c_E = np.linalg.solve(LHSE,RHSE)
             c_L = np.linalg.solve(LHSL,RHSL)
@@ -448,7 +461,7 @@ class Sim2T(object):
         # Useful Constant
         test       = np.linspace(270, self.burn, 50)
         eigs       = np.zeros([len(LSM)])
-        for i in range(self.layers + 1):
+        for i in range(self.layers):
             dim = len(LSM[i]); Z = np.zeros([dim,dim])
             # Worst case for the Diffusion Instability
             DE = max(self.elec_K[i](test)/self.elec_C[i](test))
@@ -489,6 +502,9 @@ class Sim2T(object):
             text = \
             ' The maunually chosen time step of ' + arg1 + ' is very small and will eventually cause a long simulation time.\n' + \
             ' We suggest a timestep of' + arg2 + ' s\n'
+        if msg == 4:
+            text = \
+            ' The source is not set, please recontrol the code. The command is sim.setsource(source)\n'
         print(\
     '--------------------------------------------------------------------------------------------------------------\n' + \
     text + \

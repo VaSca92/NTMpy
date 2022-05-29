@@ -24,9 +24,9 @@ class source(object):
 
         self.polarization = "p"
         self.angle      = [0]
-        self.refraction = [ ]
-        self.absorption = [ ]
-        
+        self.refraction = [1]
+        self.absorption = [1]
+
         self.thickness  = [ ]
 
         self.Tn = []
@@ -53,6 +53,9 @@ class source(object):
 #
 # -----------------------------------------------------------------------------
     def matrix(self, x, t, interfaces):
+
+        if not isinstance(self.absorption, list):
+            self.absorption = [self.absorption]
 
         xmg,tmg = np.meshgrid(x,t)
         if self.type_t.lower() in ["gaussian","gauss"]:
@@ -83,6 +86,9 @@ class source(object):
 # -----------------------------------------------------------------------------
     def transfer_matrix(self, x):
 
+        if not isinstance(self.angle, list):
+            self.angle = [self.angle]        
+
         self.Tn = []
         self.Rn = []
         self.Mn = []
@@ -96,7 +102,8 @@ class source(object):
             a, r, t = self.fresnel(self.angle[-1], self.refraction[i], self.refraction[i+1])
             self.angle.append(a)
             phi = self.thickness[i] * np.cos(self.angle[i]) / self.absorption[i]
-            self.Tn.append( np.array([ [np.exp(-phi),0], [0,np.exp(phi)] ]))
+            
+            self.Tn.append(np.array([ [np.exp(-phi),0], [0,np.exp(phi)] ]))
             self.Rn.append( np.array([ [1,-r], [-r,1] ])/t )
             self.Mn.append( np.dot(self.Rn[i], self.Tn[i]) )
             self.M = np.dot(self.Mn[-1], self.M)
@@ -131,3 +138,11 @@ class source(object):
             print("!!! Source Error: Unknown polarization type !!!")
         t = np.sqrt(1-r**2)
         return th2, r, t
+
+
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+    def setLaser(self, fluence, FWHM):
+        self.time = FWHM/np.sqrt(2*np.log(2))
+        self.peak = fluence/np.sqrt(2*np.pi*self.time**2)

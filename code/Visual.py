@@ -86,5 +86,11 @@ def surface(x, t, phi):
 # ==============================================================================
 def average(x, t, phi):
     dx = np.diff(x); wx = (np.insert(dx, 0, 0) + np.append(dx, 0) )/2
-    phi = np.average(phi, axis = 1, weights = wx)
-    plt.plot(t, phi); plt.grid(); plt.show();
+    if len(phi[0].shape) > 1:
+        for i in range(len(phi)):
+            phi_ave = np.average(phi[i], axis = 1, weights = wx)
+            plt.plot(t, phi_ave);
+    else:
+        phi_ave = np.average(phi, axis = 1, weights = wx)
+        plt.plot(t, phi_ave);
+    plt.grid(); plt.show();
