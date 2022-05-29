@@ -16,25 +16,19 @@ class source(object):
 # -----------------------------------------------------------------------------
     def __init__(self):
         self.type_t       = 'Gaussian'
-        self.type_x       = 'TMM'
+        self.type_x       = 'LambertBeer'
 
         self.peak         = 5e10
         self.time         = 2e-12
         self.delay        = 0
 
         self.polarization = "p"
-        self.angle      = [0]
+        self.angle      =  0
         self.refraction = [1]
         self.absorption = [1]
 
         self.thickness  = [ ]
 
-        self.Tn = []
-        self.Rn = []
-        self.Mn = []
-        self.M = np.eye(2)
-
-        self.computed = False
 
 # =============================================================================
 #
@@ -86,41 +80,57 @@ class source(object):
 # -----------------------------------------------------------------------------
     def transfer_matrix(self, x):
 
-        if not isinstance(self.angle, list):
-            self.angle = [self.angle]        
-
-        self.Tn = []
-        self.Rn = []
-        self.Mn = []
-        self.M = np.eye(2)
-
         layer_num = len(self.thickness)
         if len(self.refraction) != layer_num or len(self.absorption) != layer_num:
             print("!!! Source Error: Unconsistent number of layer !!!")
+        
+        a, r, t = self.fresnel(self.angle, 1, self.refraction[0])
 
-        for i in range(layer_num - 1):
-            a, r, t = self.fresnel(self.angle[-1], self.refraction[i], self.refraction[i+1])
-            self.angle.append(a)
-            phi = self.thickness[i] * np.cos(self.angle[i]) / self.absorption[i]
+        self.wave = []
+        self.dir  = [t]
+        
+        self.Tn  = [np.eye(2)]
+        self.Rn  = [np.array([ [1,-r], [-r,1] ])/t]
+        self.Mn  = [np.array([ [1,-r], [-r,1] ])/t]
+        self.M   = np.eye(2)
+
+
+        l = 0; phi = 0
+        while l < layer_num - 1 and np.exp(-phi) > 1e-16:
+            
+            self.M = self.Mn[-1] @ self.M
+            
+            a, r, t = self.fresnel(self.dir[-1], self.refraction[l], self.refraction[l+1])
+            self.dir.append(a)
+            phi = self.thickness[l] * np.cos(self.dir[l]) / self.absorption[l]
             
             self.Tn.append(np.array([ [np.exp(-phi),0], [0,np.exp(phi)] ]))
             self.Rn.append( np.array([ [1,-r], [-r,1] ])/t )
-            self.Mn.append( np.dot(self.Rn[i], self.Tn[i]) )
-            self.M = np.dot(self.Mn[-1], self.M)
-        wave = np.array([1, -self.M[1,0]/self.M[1,1]])
+            self.Mn.append( self.Tn[-1] @ self.Rn[-1] ) 
+            
+            l += 1
+            
+        # Compute the Wave in Air
+        self.wave.append(np.array([1, -self.M[1,0]/self.M[1,1]]))
 
         interfaces = np.hstack([0, np.cumsum(self.thickness), 1])
         fun_x = np.zeros(len(x))
-        dir = np.array([-1,+1]); counter = 0
+        sign = np.array([-1,+1])
+        counter = 0; l = 0
 
-        for i in range(layer_num):
-            while x[counter] < interfaces[i+1]:
-                energy = np.cos(self.angle[i]) / self.absorption[i]
-                path = ( x[counter] - interfaces[i]) * energy
-                fun_x[counter] = np.sum( np.abs(wave) * np.exp( path * dir) * energy)
+        while l < layer_num and self.wave[-1][0] > 1e-9:
+            # Update Wave at the next Interface (positive side)
+            self.wave.append( self.Mn[l] @ self.wave[-1] )
+            # Avoid Numerical Instability
+            if abs(self.wave[-1][1]) < 1e-9:
+                self.wave[-1][1] = 0
+                
+            while x[counter] < interfaces[l+1]:
+                energy = np.cos(self.dir[l]) / self.absorption[l]
+                path = ( x[counter] - interfaces[l]) * energy
+                fun_x[counter] = np.sum( np.abs(self.wave[-1]) * np.exp( path * sign) * energy)
                 counter += 1
-            if i < layer_num - 1:
-                wave = np.dot( np.dot(self.Rn[i], self.Tn[i]), wave)
+            l += 1
 
         return fun_x
 

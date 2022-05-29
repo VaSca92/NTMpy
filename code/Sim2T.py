@@ -10,6 +10,7 @@ import numpy as np
 from bspline import Bspline
 from bspline.splinelab import aptknt
 import time
+from tqdm import tqdm
 
 from Source import source
 
@@ -36,8 +37,9 @@ class Sim2T(object):
         self.order      = 5
         # Electronic System
         self.elec_K  = []
-        self.elec_Q  = []
         self.elec_C  = []
+        self.elec_QE = []
+        self.elec_QL = []
         self.LBCT_E  = 1
         self.RBCT_E  = 1
         self.LBCV_E  = 0
@@ -45,8 +47,9 @@ class Sim2T(object):
         self.init_E  = 300
         # Lattice System
         self.latt_K  = []
-        self.latt_Q  = []
         self.latt_C  = []
+        self.latt_QE = []
+        self.latt_QL = []
         self.LBCT_L  = 1
         self.RBCT_L  = 1
         self.LBCV_L  = 0
@@ -113,20 +116,22 @@ class Sim2T(object):
     def addLayer(self, L, K, C, D, G = 0, Ng = False, Np = False):
         # Add Layer to the Electron system # # # # # # # # # # # # # # # # # #
         # Thermal Conductivity
-        self.elec_K.append(self.lambdize(K[0]))
+        self.elec_K.append(self.lambdize2(K[0], 1, 1))
         # Heat Capacity  (specific heat * density)
-        self.elec_C.append(self.lambdize(C[0], D))
+        self.elec_C.append(self.lambdize2(C[0], D, 1))
         # Derivative of the thermal conductivity
         dummyQE = self.elec_K[-1]
-        self.elec_Q.append(lambda x: (dummyQE(x+1e-9)-dummyQE(x))/1e-9)
+        self.elec_QE.append(lambda x, y: (dummyQE(x+1e-9, y)-dummyQE(x, y))/1e-9)
+        self.elec_QL.append(lambda x, y: (dummyQE(x, y+1e-9)-dummyQE(x, y))/1e-9)
         # Add Layer to the Lattice system  # # # # # # # # # # # # # # # # # #
         # Thermal Conductivity
-        self.latt_K.append(self.lambdize(K[-1]))
+        self.latt_K.append(self.lambdize2(K[-1], 1, 2))
         # Heat Capacity  (specific heat * density)
-        self.latt_C.append(self.lambdize(C[-1], D))
+        self.latt_C.append(self.lambdize2(C[-1], D, 2))
         # Derivative of the thermal conductivity
         dummyQL = self.latt_K[-1]
-        self.latt_Q.append(lambda x: (dummyQL(x+1e-9)-dummyQL(x))/1e-9)
+        self.latt_QE.append(lambda x, y: (dummyQL(x+1e-9, y)-dummyQL(x, y))/1e-9)
+        self.latt_QL.append(lambda x, y: (dummyQL(x, y+1e-9)-dummyQL(x, y))/1e-9)
         # Add Coupling # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         self.G = np.append(self.G, G)
         # Detect Zeros
@@ -220,7 +225,7 @@ class Sim2T(object):
             D1L[-1] = -np.flip(D1L[0],0)
             D2L[-1] = +np.flip(D2L[0],0)
             # Matrices for the Stablity
-            LSM.append(np.array(np.dot(D2L,np.linalg.inv(D0L))))
+            LSM.append(np.array( D2L @ np.linalg.inv(D0L)))
             # Total Differentiation and Plot Matrices
             self.D0[ IFg[i] : IFg[i+1] + 1, IFg[i] : IFg[i+1] + 1] = D0L
             self.D1[ IFg[i] : IFg[i+1] + 1, IFg[i] : IFg[i+1] + 1] = D1L
@@ -379,12 +384,14 @@ class Sim2T(object):
         LBCL = self.LBCT_L; RBCL = self.RBCT_L;
         # Initialization of the variables for the Electronic System
         phi_E    = np.zeros([len(self.t),len(self.y)])
+        Flow_0E  = np.zeros( len(self.x) )
         Flow_1E  = np.zeros( len(self.x) )
         Flow_2E  = np.zeros( len(self.x) )
         dphi_E   = np.zeros( len(self.x) )
         RHSE     = np.zeros( len(self.x) )
         #Initialization of the variables for the Lattice System
         phi_L    = np.zeros([len(self.t),len(self.y)])
+        Flow_0L  = np.zeros( len(self.x) )
         Flow_1L  = np.zeros( len(self.x) )
         Flow_2L  = np.zeros( len(self.x) )
         dphi_L   = np.zeros( len(self.x) )
@@ -397,40 +404,44 @@ class Sim2T(object):
         DL = self.diffusionL
         # HERE STARTS THE MAIN LOOP
         start_EL = time.time()
-        for i in range(1,len(self.t)):
+        for i in tqdm(range(1,len(self.t))):
             # Go from coefficient c to phi and its derivatives
-            phi0_E = np.dot(self.D0,c_E); phi0_L = np.dot(self.D0,c_L)
-            phi1_E = np.dot(self.D1,c_E); phi1_L = np.dot(self.D1,c_L)
-            phi2_E = np.dot(self.D2,c_E); phi2_L = np.dot(self.D2,c_L)
+            phi0_E = self.D0 @ c_E; phi0_L = self.D0 @ c_L
+            phi1_E = self.D1 @ c_E; phi1_L = self.D1 @ c_L
+            phi2_E = self.D2 @ c_E; phi2_L = self.D2 @ c_L
             for j in range(len(DE)):  # For every Layer
                 # Conduction Heat Flow in the Electronic System
-                Flow_1E[DE[j,0]:DE[j,1]] = self.elec_Q[j](phi0_E[DE[j,0]:DE[j,1]])
-                Flow_2E[DE[j,0]:DE[j,1]] = self.elec_K[j](phi0_E[DE[j,0]:DE[j,1]])
+                Flow_0E[DE[j,0]:DE[j,1]] = self.elec_K [j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])
+                Flow_1E[DE[j,0]:DE[j,1]] = self.elec_QE[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])
+                Flow_2E[DE[j,0]:DE[j,1]] = self.elec_QL[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])
+                Flow_0E[DE[j,0]:DE[j,1]] *= phi2_E[DE[j,0]:DE[j,1]]
                 Flow_1E[DE[j,0]:DE[j,1]] *= phi1_E[DE[j,0]:DE[j,1]]**2
-                Flow_2E[DE[j,0]:DE[j,1]] *= phi2_E[DE[j,0]:DE[j,1]]
+                Flow_2E[DE[j,0]:DE[j,1]] *= phi1_E[DE[j,0]:DE[j,1]]*phi1_L[DE[j,0]:DE[j,1]]
                 # Conduction Heat Flow in the Lattice System
-                Flow_1L[DL[j,0]:DL[j,1]] = self.latt_Q[j](phi0_L[DL[j,0]:DL[j,1]])
-                Flow_2L[DL[j,0]:DL[j,1]] = self.latt_K[j](phi0_L[DL[j,0]:DL[j,1]])
-                Flow_1L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]**2
-                Flow_2L[DL[j,0]:DL[j,1]] *= phi2_L[DL[j,0]:DL[j,1]]
+                Flow_0L[DL[j,0]:DL[j,1]] = self.latt_K [j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])
+                Flow_1L[DL[j,0]:DL[j,1]] = self.latt_QE[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])
+                Flow_2L[DL[j,0]:DL[j,1]] = self.latt_QL[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])
+                Flow_0L[DL[j,0]:DL[j,1]] *= phi2_L[DL[j,0]:DL[j,1]]
+                Flow_1L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]*phi1_L[DL[j,0]:DL[j,1]]
+                Flow_2L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]**2
                 # Diffusion Equation
-                dphi_E[DE[j,0]:DE[j,1]] = Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j]*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
-                dphi_L[DL[j,0]:DL[j,1]] = Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j]*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
-                dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E)[DE[j,0]:DE[j,1]]
-                dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_L)[DL[j,0]:DL[j,1]]
+                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j]*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j]*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
+                dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E, phi0_L)[DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_E, phi0_L)[DL[j,0]:DL[j,1]]
             # Apply Heat Conservation on surfaces
             for k, j in enumerate(self.interfaceE[1:-1]): # For every interface
                 # Calculate the Flux into and out from the interface
-                IFconL = self.elec_K[ k ](phi0_E[j])*self.DR[ k ]
-                IFconR = self.elec_K[k+1](phi0_E[j])*self.DL[k+1]
+                IFconL = self.elec_K[ k ](phi0_E[j], phi0_L[j])*self.DR[ k ]
+                IFconR = self.elec_K[k+1](phi0_E[j], phi0_L[j])*self.DL[k+1]
                 # Electronic System
                 LHSE[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
                 LHSE[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
                 LHSE[j, j] = IFconR[0] - IFconL[-1]
             for k, j in enumerate(self.interfaceL[1:-1]):
                 # Calculate the Flux into and out from the interface
-                IFconL = self.latt_K[ k ](phi0_L[j])*self.DR[ k ]
-                IFconR = self.latt_K[k+1](phi0_L[j])*self.DL[k+1]
+                IFconL = self.latt_K[ k ](phi0_E[j], phi0_L[j])*self.DR[ k ]
+                IFconR = self.latt_K[k+1](phi0_E[j], phi0_L[j])*self.DL[k+1]
                 # Lattice System
                 LHSL[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
                 LHSL[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
@@ -439,15 +450,15 @@ class Sim2T(object):
             RHSE = phi0_E + self.time_step * dphi_E
             RHSL = phi0_L + self.time_step * dphi_L
             # Make Room for Boundary Condition and Interface Condition
-            if BCEL: RHSE[ 0] = BC_E[0,i]/self.elec_K[ 0](phi0_E[ 0])**LBCE
-            if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[-1])**RBCE
-            if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_L[ 0])**LBCL
-            if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_L[-1])**RBCL
+            if BCEL: RHSE[ 0] = BC_E[0,i]/self.elec_K[ 0](phi0_E[ 0], phi0_L[ 0])**LBCE
+            if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[ 0], phi0_L[ 0])**RBCE
+            if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_E[ 0], phi0_L[ 0])**LBCL
+            if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_E[ 0], phi0_L[ 0])**RBCL
             # Calculate the new value of the Temperature
             c_E = np.linalg.solve(LHSE,RHSE)
             c_L = np.linalg.solve(LHSL,RHSL)
             # Store The Temperature on the refined grid in a variable
-            phi_E[i] = np.dot(self.P0,c_E); phi_L[i] = np.dot(self.P0,c_L)
+            phi_E[i] = self.P0 @ c_E; phi_L[i] = self.P0 @ c_L
         # END OF THE MAIN LOOP
         end_EL = time.time()
         self.warning(0, str(end_EL - start_EL))
@@ -464,11 +475,11 @@ class Sim2T(object):
         for i in range(self.layers):
             dim = len(LSM[i]); Z = np.zeros([dim,dim])
             # Worst case for the Diffusion Instability
-            DE = max(self.elec_K[i](test)/self.elec_C[i](test))
-            DL = max(self.latt_K[i](test)/self.latt_C[i](test))
+            DE = max(self.elec_K[i](test, test)/self.elec_C[i](test, test))
+            DL = max(self.latt_K[i](test, test)/self.latt_C[i](test, test))
             # Worst case for the Coupling Instability
-            XE = max(self.G[i]/self.elec_C[i](test))
-            XL = max(self.G[i]/self.latt_C[i](test))
+            XE = max(self.G[i]/self.elec_C[i](test, test))
+            XL = max(self.G[i]/self.latt_C[i](test, test))
             # Instability due to Diffusion
             DIF  = np.block([[DE*LSM[i], Z],[Z, DL*LSM[i]]])
             # Instability due to Coupling
