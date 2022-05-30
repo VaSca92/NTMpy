@@ -17,7 +17,7 @@ from Source import source
 # =============================================================================
 #
 # =============================================================================
-class Sim2T(object):
+class Sim3T(object):
 
 # =============================================================================
 #
@@ -40,6 +40,7 @@ class Sim2T(object):
         self.elec_C  = []
         self.elec_QE = []
         self.elec_QL = []
+        self.elec_QS = []
         self.LBCT_E  = 1
         self.RBCT_E  = 1
         self.LBCV_E  = 0
@@ -50,14 +51,27 @@ class Sim2T(object):
         self.latt_C  = []
         self.latt_QE = []
         self.latt_QL = []
+        self.latt_QS = []
         self.LBCT_L  = 1
         self.RBCT_L  = 1
         self.LBCV_L  = 0
         self.RBCV_L  = 0
         self.init_L  = 300
+        # Spin System
+        self.spin_K  = []
+        self.spin_C  = []
+        self.spin_QE = []
+        self.spin_QL = []
+        self.spin_QS = []
+        self.LBCT_S  = 1
+        self.RBCT_S  = 1
+        self.LBCV_S  = 0
+        self.RBCV_S  = 0
+        self.init_S  = 300
         # Coupling
-        self.G = []
-        
+        self.GEL = []
+        self.GES = []
+        self.GLS = []
         # Differentiation Matrices an Plot Matrix
         self.D0 = np.zeros([0,0])
         self.D1 = np.zeros([0,0])
@@ -83,10 +97,13 @@ class Sim2T(object):
         self.diffusionE = []
         self.interfaceL = []
         self.diffusionL = []
+        self.interfaceS = []
+        self.diffusionS = []
         self.layer_ind  = []
         # Conductivity == 0
         self.zeroE = []
         self.zeroL = []
+        self.zeroS = []
         
 
 # =============================================================================
@@ -113,30 +130,45 @@ class Sim2T(object):
 # =============================================================================
 #
 # -----------------------------------------------------------------------------
-    def addLayer(self, L, K, C, D, G = 0, Ng = False, Np = False):
+    def addLayer(self, L, K, C, D, G = [0,0,0], Ng = False, Np = False):
         # Add Layer to the Electron system # # # # # # # # # # # # # # # # # #
         # Thermal Conductivity
-        self.elec_K.append(self.lambdize2(K[0], 1, 1))
+        self.elec_K.append(self.lambdize3(K[0], 1, 1))
         # Heat Capacity  (specific heat * density)
-        self.elec_C.append(self.lambdize2(C[0], D, 1))
+        self.elec_C.append(self.lambdize3(C[0], D, 1))
         # Derivative of the thermal conductivity
         dummyQE = self.elec_K[-1]
-        self.elec_QE.append(lambda x, y: (dummyQE(x+1e-9, y)-dummyQE(x, y))/1e-9)
-        self.elec_QL.append(lambda x, y: (dummyQE(x, y+1e-9)-dummyQE(x, y))/1e-9)
+        self.elec_QE.append(lambda x, y, z: (dummyQE(x+1e-9, y, z)-dummyQE(x, y, z))/1e-9)
+        self.elec_QL.append(lambda x, y, z: (dummyQE(x, y+1e-9, z)-dummyQE(x, y, z))/1e-9)
+        self.elec_QS.append(lambda x, y, z: (dummyQE(x, y, z+1e-9)-dummyQE(x, y, z))/1e-9)
         # Add Layer to the Lattice system  # # # # # # # # # # # # # # # # # #
         # Thermal Conductivity
-        self.latt_K.append(self.lambdize2(K[-1], 1, 2))
+        self.latt_K.append(self.lambdize3(K[1], 1, 2))
         # Heat Capacity  (specific heat * density)
-        self.latt_C.append(self.lambdize2(C[-1], D, 2))
+        self.latt_C.append(self.lambdize3(C[1], D, 2))
         # Derivative of the thermal conductivity
         dummyQL = self.latt_K[-1]
-        self.latt_QE.append(lambda x, y: (dummyQL(x+1e-9, y)-dummyQL(x, y))/1e-9)
-        self.latt_QL.append(lambda x, y: (dummyQL(x, y+1e-9)-dummyQL(x, y))/1e-9)
+        self.latt_QE.append(lambda x, y, z: (dummyQL(x+1e-9, y, z)-dummyQL(x, y, z))/1e-9)
+        self.latt_QL.append(lambda x, y, z: (dummyQL(x, y+1e-9, z)-dummyQL(x, y, z))/1e-9)
+        self.latt_QS.append(lambda x, y, z: (dummyQL(x, y, z+1e-9)-dummyQL(x, y, z))/1e-9)
+        # Add Layer to the Spin system   # # # # # # # # # # # # # # # # # # # 
+        # Thermal Conductivity
+        self.spin_K.append(self.lambdize3(K[1], 1, 3))
+        # Heat Capacity  (specific heat * density)
+        self.spin_C.append(self.lambdize3(C[1], D, 3))
+        # Derivative of the thermal conductivity
+        dummyQS = self.spin_K[-1]
+        self.spin_QE.append(lambda x, y, z: (dummyQS(x+1e-9, y, z)-dummyQS(x, y, z))/1e-9)
+        self.spin_QL.append(lambda x, y, z: (dummyQS(x, y+1e-9, z)-dummyQS(x, y, z))/1e-9)
+        self.spin_QS.append(lambda x, y, z: (dummyQS(x, y, z+1e-9)-dummyQS(x, y, z))/1e-9)
         # Add Coupling # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        self.G = np.append(self.G, G)
+        self.GEL = np.append(self.GEL, G[0])
+        self.GES = np.append(self.GES, G[1])
+        self.GLS = np.append(self.GLS, G[2])
         # Detect Zeros
-        self.zeroE.append(K[ 0] == 0)
-        self.zeroL.append(K[-1] == 0)
+        self.zeroE.append(K[0] == 0)
+        self.zeroL.append(K[1] == 0)
+        self.zeroS.append(K[2] == 0)
         # Add Geometry
         self.length.append(L + self.length[-1])
         Ng = self.default_Ng if not Ng else Ng
@@ -182,6 +214,27 @@ class Sim2T(object):
                     return lambda x, y: fun(y) * multiplyer
         elif isinstance(fun, (int, float, typecheckN)):
             return lambda x, y: fun*multiplyer + 0*x
+
+
+# =============================================================================
+#
+# -----------------------------------------------------------------------------
+    def lambdize3(self, fun, multiplyer = 1, arg = 1 ):
+        typecheckN = type(np.array([0])[0])
+        typecheckL = type(lambda x: x)
+        if isinstance(fun, typecheckL):
+            try:
+                dummy = fun(0,0,0)
+                return lambda x, y, z: fun(x,y,z)*multiplyer
+            except:
+                if   arg == 1:
+                    return lambda x, y, z: fun(x) * multiplyer
+                elif arg == 2:
+                    return lambda x, y, z: fun(y) * multiplyer
+                elif arg == 3:
+                    return lambda x, y, z: fun(z) * multiplyer
+        elif isinstance(fun, (int, float, typecheckN)):
+            return lambda x, y, z: fun*multiplyer + 0*x
 
 # =============================================================================
 #
@@ -242,9 +295,11 @@ class Sim2T(object):
             self.y = np.append( self.y[:-1], y)
         self.interfaceE = IFg
         self.interfaceL = IFg
+        self.interfaceS = IFg
         self.layer_ind  = np.vstack([ IFg[:-1] + 1, IFg[1:]]).transpose()
         self.diffusionE = self.layer_ind.copy()
         self.diffusionL = self.layer_ind.copy()
+        self.diffusionS = self.layer_ind.copy()
         self.detect_id()
         # Calculate approximated Time steps
         self.dt_ext = self.stability(LSM)
@@ -265,6 +320,7 @@ class Sim2T(object):
         if self.zeroE[-1]:
             self.diffusionE[-1,-1] += 1
         
+        
         for i in range( len(self.zeroL) - 2, -1, -1):
             if self.zeroL[i] and self.zeroL[i+1]:
                 self.interfaceL = np.delete(self.interfaceL, i)
@@ -275,6 +331,17 @@ class Sim2T(object):
         if self.zeroL[-1]:
             self.diffusionL[ 0, 0] += 1
 
+
+        for i in range( len(self.zeroS) - 2, -1, -1):
+            if self.zeroS[i] and self.zeroS[i+1]:
+                self.interfaceS = np.delete(self.interfaceS, i)
+                self.diffusionS[ i+1, 0] -= 1
+                
+        if self.zeroS[ 0]:
+            self.diffusionS[ 0, 0] -= 1
+        if self.zeroS[-1]:
+            self.diffusionS[ 0, 0] += 1
+            
 # =============================================================================
 #
 # -----------------------------------------------------------------------------
@@ -282,7 +349,9 @@ class Sim2T(object):
         # Constant for Type Checking
         typecheck = type(lambda x: x)
         # Initialization
-        BC_E = np.zeros([2 ,len(self.t)]); BC_L = np.zeros([2 ,len(self.t)])
+        BC_E = np.zeros([2 ,len(self.t)])
+        BC_L = np.zeros([2 ,len(self.t)])
+        BC_S = np.zeros([2 ,len(self.t)])
         # Create Boundary Condition for the Electronic System
         if isinstance(self.LBCV_E, typecheck): BC_E[0] = self.LBCV_E(self.t)
         else: BC_E[0] = np.tile(self.LBCV_E, len(self.t))
@@ -293,8 +362,14 @@ class Sim2T(object):
         else: BC_L[0] = np.tile(self.LBCV_L, len(self.t))
         if isinstance(self.RBCV_L, typecheck): BC_L[1] = self.RBCV_L(self.t)
         else: BC_L[1] = np.tile(self.RBCV_L, len(self.t))
+        # Create Boundary Condition for the Spin System
+        if isinstance(self.LBCV_S, typecheck): BC_S[0] = self.LBCV_S(self.t)
+        else: BC_S[0] = np.tile(self.LBCV_S, len(self.t))
+        if isinstance(self.RBCV_S, typecheck): BC_S[1] = self.RBCV_S(self.t)
+        else: BC_S[1] = np.tile(self.RBCV_S, len(self.t))
+        
         # Return Boundary Condition
-        return BC_E, BC_L
+        return BC_E, BC_L, BC_S
 
 # =============================================================================
 #
@@ -309,35 +384,52 @@ class Sim2T(object):
         elif isinstance(self.init_E, (int, float)):
             ce = np.tile(self.init_E, len(self.x))
             ue = np.tile(self.init_E, len(self.y))
+        
         if isinstance(self.init_L, typecheck):
             cl = np.linalg.solve(self.D0, self.init_L(self.x))
             ul = self.init_L(self.y)
         elif isinstance(self.init_L, (int, float)):
             cl = np.tile(self.init_L, len(self.x))
             ul = np.tile(self.init_L, len(self.y))
-        return ce, ue, cl, ul
+        
+        if isinstance(self.init_S, typecheck):
+            cs = np.linalg.solve(self.D0, self.init_S(self.x))
+            us = self.init_S(self.y)
+        elif isinstance(self.init_S, (int, float)):
+            cs = np.tile(self.init_S, len(self.x))
+            us = np.tile(self.init_S, len(self.y))
+        
+        
+        return ce, ue, cl, ul, cs, us
 
 # =============================================================================
 #
 # -----------------------------------------------------------------------------
     def generate_matrix(self):
         # Matrics of Coefficient fot the Electron and Lattice System
-        LHSE = self.D0.copy(); LHSL = self.D0.copy()
+        LHSE = self.D0.copy(); LHSL = self.D0.copy(); LHSS = self.D0.copy();
         
         # Setting Boundary Condition Type
         if self.LBCT_E == 1 and not self.zeroE[ 0]:
             LHSE[ 0, :self.grd_points[ 0] ] = -self.DL[ 0].copy()
         if self.RBCT_E == 1 and not self.zeroE[-1]:
             LHSE[-1, -self.grd_points[-1]:] =  self.DR[-1].copy()
+            
         if self.LBCT_L == 1 and not self.zeroL[ 0]:
             LHSL[ 0, :self.grd_points[0] ] = -self.DL[ 0].copy()
         if self.RBCT_L == 1 and not self.zeroL[-1]:
             LHSL[-1, -self.grd_points[-1]:] =  self.DR[-1].copy()
         
-        LHSE[self.interfaceE[+1:-1]] = 0;
-        LHSL[self.interfaceL[+1:-1]] = 0;    
+        if self.LBCT_S == 1 and not self.zeroS[ 0]:
+            LHSS[ 0, :self.grd_points[0] ] = -self.DL[ 0].copy()
+        if self.RBCT_S == 1 and not self.zeroS[-1]:
+            LHSS[-1, -self.grd_points[-1]:] =  self.DR[-1].copy()
         
-        return LHSE, LHSL
+        LHSE[self.interfaceE[+1:-1]] = 0;
+        LHSL[self.interfaceL[+1:-1]] = 0;
+        LHSS[self.interfaceL[+1:-1]] = 0;
+        
+        return LHSE, LHSL, LHSS
 
 # =============================================================================
 #
@@ -354,6 +446,7 @@ class Sim2T(object):
         # Rename some Instance Variables
         BCEL = not self.zeroE[0]; BCER = not self.zeroE[-1]
         BCLL = not self.zeroL[0]; BCLR = not self.zeroL[-1]
+        BCLS = not self.zeroS[0]; BCLS = not self.zeroS[-1]
         # STABILITY EVALUATION ################################################
         # Calculating the preferred time step
         idealtimestep  = np.min(self.dt_ext)
@@ -369,9 +462,9 @@ class Sim2T(object):
         # Define the time vector
         self.t = np.arange(self.start_time, self.final_time, self.time_step)
         # Generate all the matrices ###########################################
-        LHSE, LHSL         = self.generate_matrix()
-        BC_E, BC_L         = self.generate_BC()
-        c_E, u_E, c_L, u_L = self.generate_init()
+        LHSE, LHSL, LHSS             = self.generate_matrix()
+        BC_E, BC_L, BC_S             = self.generate_BC()
+        c_E, u_E, c_L, u_L, c_S, u_S = self.generate_init()
         # SOURCE GENERATION ###################################################
         source = self.source.matrix(self.x, self.t, self.length)
         # ------------------------------------------- Setup ended -------------
@@ -382,11 +475,13 @@ class Sim2T(object):
         # Rename Boundary Condition type
         LBCE = self.LBCT_E; RBCE = self.RBCT_E;
         LBCL = self.LBCT_L; RBCL = self.RBCT_L;
+        LBCS = self.LBCT_S; RBCS = self.RBCT_S;
         # Initialization of the variables for the Electronic System
         phi_E    = np.zeros([len(self.t),len(self.y)])
         Flow_0E  = np.zeros( len(self.x) )
         Flow_1E  = np.zeros( len(self.x) )
         Flow_2E  = np.zeros( len(self.x) )
+        Flow_3E  = np.zeros( len(self.x) )
         dphi_E   = np.zeros( len(self.x) )
         RHSE     = np.zeros( len(self.x) )
         #Initialization of the variables for the Lattice System
@@ -394,75 +489,116 @@ class Sim2T(object):
         Flow_0L  = np.zeros( len(self.x) )
         Flow_1L  = np.zeros( len(self.x) )
         Flow_2L  = np.zeros( len(self.x) )
+        Flow_3L  = np.zeros( len(self.x) )
         dphi_L   = np.zeros( len(self.x) )
         RHSL     = np.zeros( len(self.x) )
+        #Initialization of the variables for the Spin System
+        phi_S    = np.zeros([len(self.t),len(self.y)])
+        Flow_0S  = np.zeros( len(self.x) )
+        Flow_1S  = np.zeros( len(self.x) )
+        Flow_2S  = np.zeros( len(self.x) )
+        Flow_3S  = np.zeros( len(self.x) )
+        dphi_S   = np.zeros( len(self.x) )
+        RHSS     = np.zeros( len(self.x) )
         # Set Initial Condition
-        phi_E[0] = u_E; phi_L[0] = u_L
+        phi_E[0] = u_E; phi_L[0] = u_L; phi_S[0] = u_S 
         # Identify Layer
         LI = self.layer_ind
         DE = self.diffusionE
         DL = self.diffusionL
+        DS = self.diffusionS
         # HERE STARTS THE MAIN LOOP
         start_EL = time.time()
         for i in tqdm(range(1,len(self.t))):
             # Go from coefficient c to phi and its derivatives
-            phi0_E = self.D0 @ c_E; phi0_L = self.D0 @ c_L
-            phi1_E = self.D1 @ c_E; phi1_L = self.D1 @ c_L
-            phi2_E = self.D2 @ c_E; phi2_L = self.D2 @ c_L
+            phi0_E = self.D0 @ c_E; phi0_L = self.D0 @ c_L; phi0_S = self.D0 @ c_S
+            phi1_E = self.D1 @ c_E; phi1_L = self.D1 @ c_L; phi1_S = self.D1 @ c_S
+            phi2_E = self.D2 @ c_E; phi2_L = self.D2 @ c_L; phi2_S = self.D2 @ c_S
             for j in range(len(DE)):  # For every Layer
                 # Conduction Heat Flow in the Electronic System
-                Flow_0E[DE[j,0]:DE[j,1]] = self.elec_K [j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])
-                Flow_1E[DE[j,0]:DE[j,1]] = self.elec_QE[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])
-                Flow_2E[DE[j,0]:DE[j,1]] = self.elec_QL[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])
+                Flow_0E[DE[j,0]:DE[j,1]] = self.elec_K [j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]], phi0_S[DE[j,0]:DE[j,1]])
+                Flow_1E[DE[j,0]:DE[j,1]] = self.elec_QE[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]], phi0_S[DE[j,0]:DE[j,1]])
+                Flow_2E[DE[j,0]:DE[j,1]] = self.elec_QL[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]], phi0_S[DE[j,0]:DE[j,1]])
+                Flow_3E[DE[j,0]:DE[j,1]] = self.elec_QS[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]], phi0_S[DE[j,0]:DE[j,1]])
                 Flow_0E[DE[j,0]:DE[j,1]] *= phi2_E[DE[j,0]:DE[j,1]]
                 Flow_1E[DE[j,0]:DE[j,1]] *= phi1_E[DE[j,0]:DE[j,1]]**2
                 Flow_2E[DE[j,0]:DE[j,1]] *= phi1_E[DE[j,0]:DE[j,1]]*phi1_L[DE[j,0]:DE[j,1]]
+                Flow_3E[DE[j,0]:DE[j,1]] *= phi1_E[DE[j,0]:DE[j,1]]*phi1_S[DE[j,0]:DE[j,1]]
                 # Conduction Heat Flow in the Lattice System
-                Flow_0L[DL[j,0]:DL[j,1]] = self.latt_K [j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])
-                Flow_1L[DL[j,0]:DL[j,1]] = self.latt_QE[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])
-                Flow_2L[DL[j,0]:DL[j,1]] = self.latt_QL[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])
+                Flow_0L[DL[j,0]:DL[j,1]] = self.latt_K [j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]], phi0_S[DL[j,0]:DL[j,1]])
+                Flow_1L[DL[j,0]:DL[j,1]] = self.latt_QE[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]], phi0_S[DL[j,0]:DL[j,1]])
+                Flow_2L[DL[j,0]:DL[j,1]] = self.latt_QL[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]], phi0_S[DL[j,0]:DL[j,1]])
+                Flow_3L[DL[j,0]:DL[j,1]] = self.latt_QS[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]], phi0_S[DL[j,0]:DL[j,1]])
                 Flow_0L[DL[j,0]:DL[j,1]] *= phi2_L[DL[j,0]:DL[j,1]]
                 Flow_1L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]*phi1_L[DL[j,0]:DL[j,1]]
                 Flow_2L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]**2
+                Flow_3L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]*phi1_S[DL[j,0]:DL[j,1]]
+                # Conduction Heat Flow in the Spin System
+                Flow_0S[DS[j,0]:DS[j,1]] = self.spin_K [j](phi0_E[DS[j,0]:DS[j,1]], phi0_L[DS[j,0]:DS[j,1]], phi0_S[DS[j,0]:DS[j,1]])
+                Flow_1S[DS[j,0]:DS[j,1]] = self.spin_QE[j](phi0_E[DS[j,0]:DS[j,1]], phi0_L[DS[j,0]:DS[j,1]], phi0_S[DS[j,0]:DS[j,1]])
+                Flow_2S[DS[j,0]:DS[j,1]] = self.spin_QL[j](phi0_E[DS[j,0]:DS[j,1]], phi0_L[DS[j,0]:DS[j,1]], phi0_S[DS[j,0]:DS[j,1]])
+                Flow_3S[DS[j,0]:DS[j,1]] = self.spin_QS[j](phi0_E[DS[j,0]:DS[j,1]], phi0_L[DS[j,0]:DS[j,1]], phi0_S[DS[j,0]:DS[j,1]])
+                Flow_0S[DS[j,0]:DS[j,1]] *= phi2_S[DS[j,0]:DS[j,1]]
+                Flow_1S[DS[j,0]:DS[j,1]] *= phi1_E[DS[j,0]:DS[j,1]]*phi1_S[DS[j,0]:DS[j,1]]
+                Flow_2S[DS[j,0]:DS[j,1]] *= phi1_L[DS[j,0]:DS[j,1]]*phi1_S[DS[j,0]:DS[j,1]]
+                Flow_3S[DS[j,0]:DS[j,1]] *= phi1_S[DS[j,0]:DS[j,1]]**2
+                
                 # Diffusion Equation
-                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j]*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
-                dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j]*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
-                dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E, phi0_L)[DE[j,0]:DE[j,1]]
-                dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_E, phi0_L)[DL[j,0]:DL[j,1]]
+                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.GEL[j]*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + self.GES[j]*(phi0_S[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.GEL[j]*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]]) + self.GLS[j]*(phi0_S[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
+                dphi_S[DS[j,0]:DS[j,1]] = Flow_0S[DS[j,0]:DS[j,1]] + Flow_1S[DS[j,0]:DS[j,1]] + Flow_2S[DS[j,0]:DS[j,1]] + self.GES[j]*(phi0_E[DS[j,0]:DS[j,1]]-phi0_S[DS[j,0]:DS[j,1]]) + self.GLS[j]*(phi0_L[DS[j,0]:DS[j,1]]-phi0_S[DS[j,0]:DS[j,1]])
+                dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E, phi0_L, phi0_S)[DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_E, phi0_L, phi0_S)[DL[j,0]:DL[j,1]]
+                dphi_S[DS[j,0]:DS[j,1]] /= self.spin_C[j](phi0_E, phi0_L, phi0_S)[DS[j,0]:DS[j,1]]
             # Apply Heat Conservation on surfaces
             for k, j in enumerate(self.interfaceE[1:-1]): # For every interface
                 # Calculate the Flux into and out from the interface
-                IFconL = self.elec_K[ k ](phi0_E[j], phi0_L[j])*self.DR[ k ]
-                IFconR = self.elec_K[k+1](phi0_E[j], phi0_L[j])*self.DL[k+1]
+                IFconL = self.elec_K[ k ](phi0_E[j], phi0_L[j], phi0_S[j])*self.DR[ k ]
+                IFconR = self.elec_K[k+1](phi0_E[j], phi0_L[j], phi0_S[j])*self.DL[k+1]
                 # Electronic System
                 LHSE[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
                 LHSE[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
                 LHSE[j, j] = IFconR[0] - IFconL[-1]
+            
             for k, j in enumerate(self.interfaceL[1:-1]):
                 # Calculate the Flux into and out from the interface
-                IFconL = self.latt_K[ k ](phi0_E[j], phi0_L[j])*self.DR[ k ]
-                IFconR = self.latt_K[k+1](phi0_E[j], phi0_L[j])*self.DL[k+1]
+                IFconL = self.latt_K[ k ](phi0_E[j], phi0_L[j], phi0_S[j])*self.DR[ k ]
+                IFconR = self.latt_K[k+1](phi0_E[j], phi0_L[j], phi0_S[j])*self.DL[k+1]
                 # Lattice System
                 LHSL[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
                 LHSL[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
                 LHSL[j, j] = IFconR[0] - IFconL[-1]
+                
+            for k, j in enumerate(self.interfaceS[1:-1]): # For every interface
+                # Calculate the Flux into and out from the interface
+                IFconL = self.spin_K[ k ](phi0_E[j], phi0_L[j], phi0_S[j])*self.DR[ k ]
+                IFconR = self.spin_K[k+1](phi0_E[j], phi0_L[j], phi0_S[j])*self.DL[k+1]
+                # Electronic System
+                LHSS[j, LI[ k ,0] - 1 : LI[ k ,1]] = -IFconL[:-1]
+                LHSS[j, LI[k+1,0] : LI[k+1,1] + 1] = +IFconR[+1:]
+                LHSS[j, j] = IFconR[0] - IFconL[-1]
             # Applying Explicit Euler Method
             RHSE = phi0_E + self.time_step * dphi_E
             RHSL = phi0_L + self.time_step * dphi_L
+            RHSS = phi0_S + self.time_step * dphi_S
             # Make Room for Boundary Condition and Interface Condition
-            if BCEL: RHSE[ 0] = BC_E[0,i]/self.elec_K[ 0](phi0_E[ 0], phi0_L[ 0])**LBCE
-            if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[-1], phi0_L[-1])**RBCE
-            if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_E[ 0], phi0_L[ 0])**LBCL
-            if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_E[-1], phi0_L[-1])**RBCL
+            if BCEL: RHSE[ 0] = BC_E[0,i]/self.elec_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**LBCE
+            if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**RBCE
+            if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**LBCL
+            if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**RBCL
+            if BCLS: RHSS[ 0] = BC_S[0,i]/self.spin_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**LBCL
+            if BCLS: RHSS[-1] = BC_S[1,i]/self.spin_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**RBCL
+            
             # Calculate the new value of the Temperature
             c_E = np.linalg.solve(LHSE,RHSE)
             c_L = np.linalg.solve(LHSL,RHSL)
+            c_S = np.linalg.solve(LHSS,RHSS)
             # Store The Temperature on the refined grid in a variable
-            phi_E[i] = self.P0 @ c_E; phi_L[i] = self.P0 @ c_L
+            phi_E[i] = self.P0 @ c_E; phi_L[i] = self.P0 @ c_L; phi_S[i] = self.P0 @ c_S;
         # END OF THE MAIN LOOP
         end_EL = time.time()
         self.warning(0, str(end_EL - start_EL))
-        return np.rollaxis(np.dstack([phi_E, phi_L]),2), self.y
+        return np.rollaxis(np.dstack([phi_E, phi_L, phi_S]),2), self.y
 
 
 # =============================================================================
@@ -473,22 +609,29 @@ class Sim2T(object):
         test       = np.linspace(270, self.burn, 50)
         eigs       = np.zeros([len(LSM)])
         for i in range(self.layers):
-            dim = len(LSM[i]); 
+            dim = len(LSM[i]); DIF = np.zeros([3*dim,3*dim])
             # Worst case for the Diffusion Instability
-            DE = max(self.elec_K[i](test, test)/self.elec_C[i](test, test))
-            DL = max(self.latt_K[i](test, test)/self.latt_C[i](test, test))
+            DE = max(self.elec_K[i](test, test, test)/self.elec_C[i](test, test, test))
+            DL = max(self.latt_K[i](test, test, test)/self.latt_C[i](test, test, test))
+            DS = max(self.spin_K[i](test, test, test)/self.spin_C[i](test, test, test))
             # Worst case for the Coupling Instability
-            XE = max(self.G[i]/self.elec_C[i](test, test))
-            XL = max(self.G[i]/self.latt_C[i](test, test))
+            XEL = max(self.GEL[i]/self.elec_C[i](test, test, test))
+            XLE = max(self.GEL[i]/self.latt_C[i](test, test, test))
+            XES = max(self.GES[i]/self.elec_C[i](test, test, test))
+            XSE = max(self.GES[i]/self.spin_C[i](test, test, test))
+            XLS = max(self.GLS[i]/self.latt_C[i](test, test, test))
+            XSL = max(self.GLS[i]/self.spin_C[i](test, test, test))
             # Instability due to Diffusion
-            DIF  = np.kron(np.diag(np.array([DE,DL])), LSM[i])
+            DIF  = np.kron(np.diag([DE,DL,DS]), LSM[i])
             # Instability due to Coupling
-            EXC = np.kron(np.array([[-XE, XE],[XL, -XL]]), np.eye(dim))
+            EXC = np.array([[-XEL-XES,XEL,XES],[XLE,-XLE-XLS,XLS],[XSE,XSL,-XSE-XSL]])
+            EXC = np.kron( EXC, np.eye(dim))
             # Total Instability
             StbMat = EXC + DIF
             # Evaluate the Eigenvalues
             eigs[i] = min(np.real(np.linalg.eig(StbMat)[0]))
-            eigs[i] = min(eigs[i], -XE/.5, -XL/.5)
+            min_exc = min(-XEL, -XLE, -XES, -XSE, -XLS, -XSL)
+            eigs[i] = min(eigs[i], min_exc/.5)
         # Return the smallest time step
         return min(-1.9/eigs)
 

@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-case = 4
+case = 3
 
 if case == 1:
     # Case 1 ==================================================================
