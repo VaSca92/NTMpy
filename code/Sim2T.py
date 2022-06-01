@@ -373,7 +373,8 @@ class Sim2T(object):
         BC_E, BC_L         = self.generate_BC()
         c_E, u_E, c_L, u_L = self.generate_init()
         # SOURCE GENERATION ###################################################
-        source = self.source.matrix(self.x, self.t, self.length)
+        self.source.thickness = np.diff(self.length)
+        source = self.source.matrix(self.x, self.t)
         # ------------------------------------------- Setup ended -------------
 
         # ---------------------------------------------------------------------
@@ -462,7 +463,7 @@ class Sim2T(object):
         # END OF THE MAIN LOOP
         end_EL = time.time()
         self.warning(0, str(end_EL - start_EL))
-        return np.rollaxis(np.dstack([phi_E, phi_L]),2), self.y
+        return self.y, self.t, np.rollaxis(np.dstack([phi_E, phi_L]),2)
 
 
 # =============================================================================

@@ -5,35 +5,39 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-case = 3
+case = 1
 
 if case == 1:
     # Case 1 ==================================================================
     # Create Source
     s = source()
-    s.absorption = [1e-8, 1e-8]
+    s.type_x = "tmm"
+    s.absorption = [1e-7, 1e-7]
     s.refraction = [1, 1]
     s.time = 2e-12
     s.delay = 2e-12
-    s.angle = np.pi/4
+    s.angle = 1*np.pi/4
     # Instantiate the Sim2T class
     sim = Sim2T()
     # Add layers (Length,conductivity,heatCapacity,rho,coupling)
-    sim.addLayer(40e-9, [ 6,  1], [lambda T: .112*T, 450], 6500, 5e17, 12)
-    sim.addLayer(80e-9, [12,  1], [lambda T: .025*T, 730], 5100, 5e17, 12)
+    sim.addLayer(40e-9, [ 6,  1], [lambda T: .112*T, 450], 6500, 5e17, 10)
+    sim.addLayer(40e-9, [12,  1], [lambda T: .025*T, 730], 5100, 5e17, 16)
 
     sim.setSource(s)
 
-    sim.final_time = 10e-12
+    sim.final_time = 1e-12
 
     #[phi_E,phi_L,x] = sim.run()
-    [phi,x] = sim.run()
+    [x, t, phi] = sim.run()
 
-    t = np.arange(sim.start_time, sim.final_time, sim.time_step)
+    #t = np.arange(sim.start_time, sim.final_time, sim.time_step)
     #vs.compare(x,t,phi[0],phi[1], 2)
 
     vs.spaceVStime(x, t, phi[0])
-    #vs.surface(x,t,s.matrix(x,t,sim.length))
+    vs.average(x,t,phi)
+    #plt.plot(x, phi[0,100])
+    plt.plot(x, s.matrix(x,t)[0])
+    #plt.grid()
 
     # -------------------------------------------------------------------------
 
@@ -66,9 +70,8 @@ elif case == 2:
     sim.final_time = 8000
 
     # RUN ...
-    [phi, x] = sim.run()
-    t = np.arange(sim.start_time, sim.final_time, sim.time_step)
-
+    [x, t, phi] = sim.run()
+    
     #vs.compare(x,t,phi[0],phi[1],1)
     #plt.plot(x, phi[0][1,:], x, phi[1][1,:], x, phi[0][-1,:], x, phi[1][-1,:])
     #plt.grid();plt.show()
@@ -116,9 +119,8 @@ elif case == 3:
     sim.final_time = 50e-12
 
     # Run simulation
-    [phi, x] = sim.run()
+    [x, t, phi] = sim.run()
 
-    t = np.arange(sim.start_time, sim.final_time, sim.time_step)
     vs.average(x,t,phi)
 
     # -------------------------------------------------------------------------
@@ -164,11 +166,10 @@ elif case == 4:
     sim.addLayer(1600e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,[G_Si],15)
 
     sim.final_time = 6e-12
-    [T,x] = sim.run()
+    [x, t, T] = sim.run()
     t = np.arange(sim.start_time, sim.final_time, sim.time_step)
     T_e = T[0]; T_l = T[1]
     
-    vs.surface(x,t,s.matrix(x,t,sim.length))
     vs.average(x,t,T)
 
     exp_weights = np.exp(-x/1e-8)

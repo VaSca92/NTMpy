@@ -78,7 +78,7 @@ def surface(x, t, phi):
     fig = plt.figure(); ax = fig.gca(projection='3d')
     surf = ax.plot_surface(x,t,phi[::10,::2],cmap = 'plasma')
     fig.colorbar(surf,shrink=0.7, aspect=5)
-    plt.xlabel('x-Space'); plt.ylabel('time'); plt.title(r'$\phi(t,x)$')
+    plt.xlabel('x-Space'); plt.ylabel('time'); plt.title(r'$\phi(x,t)$')
     plt.show()
 
 # ==============================================================================

@@ -58,8 +58,6 @@ sim.setSource(s)
 sim.addLayer(length,[k,k,k],[C_e,C_l,C_s],density,[G_el,G_se,G_ls], 20)
 sim.final_time = 6e-12
 #To get the raw output in form of arrays
-[phi, x] = sim.run()
+[x, t, phi] = sim.run()
 
-
-t = np.arange(sim.start_time, sim.final_time, sim.time_step)
 vs.average(x,t,phi)

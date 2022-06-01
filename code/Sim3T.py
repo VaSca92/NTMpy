@@ -466,7 +466,8 @@ class Sim3T(object):
         BC_E, BC_L, BC_S             = self.generate_BC()
         c_E, u_E, c_L, u_L, c_S, u_S = self.generate_init()
         # SOURCE GENERATION ###################################################
-        source = self.source.matrix(self.x, self.t, self.length)
+        self.source.thickness = np.diff(self.length)
+        source = self.source.matrix(self.x, self.t)
         # ------------------------------------------- Setup ended -------------
 
         # ---------------------------------------------------------------------
@@ -598,7 +599,7 @@ class Sim3T(object):
         # END OF THE MAIN LOOP
         end_EL = time.time()
         self.warning(0, str(end_EL - start_EL))
-        return np.rollaxis(np.dstack([phi_E, phi_L, phi_S]),2), self.y
+        return self.y, self.t, np.rollaxis(np.dstack([phi_E, phi_L, phi_S]),2)
 
 
 # =============================================================================
