@@ -133,7 +133,7 @@ class Sim2T(object):
         self.latt_QE.append(lambda x, y: (dummyQL(x+1e-9, y)-dummyQL(x, y))/1e-9)
         self.latt_QL.append(lambda x, y: (dummyQL(x, y+1e-9)-dummyQL(x, y))/1e-9)
         # Add Coupling # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        self.G = np.append(self.G, G)
+        self.G.append(self.lambdize2(G, 1, 1))
         # Detect Zeros
         self.zeroE.append(K[ 0] == 0)
         self.zeroL.append(K[-1] == 0)
@@ -426,8 +426,8 @@ class Sim2T(object):
                 Flow_1L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]*phi1_L[DL[j,0]:DL[j,1]]
                 Flow_2L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]**2
                 # Diffusion Equation
-                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j]*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
-                dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j]*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
+                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
+                dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
                 dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E, phi0_L)[DE[j,0]:DE[j,1]]
                 dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_E, phi0_L)[DL[j,0]:DL[j,1]]
             # Apply Heat Conservation on surfaces
@@ -479,8 +479,8 @@ class Sim2T(object):
             DE = max(self.elec_K[i](test, test)/self.elec_C[i](test, test))
             DL = max(self.latt_K[i](test, test)/self.latt_C[i](test, test))
             # Worst case for the Coupling Instability
-            XE = max(self.G[i]/self.elec_C[i](test, test))
-            XL = max(self.G[i]/self.latt_C[i](test, test))
+            XE = max(self.G[i](test, test)/self.elec_C[i](test, test))
+            XL = max(self.G[i](test, test)/self.latt_C[i](test, test))
             # Instability due to Diffusion
             DIF  = np.kron(np.diag(np.array([DE,DL])), LSM[i])
             # Instability due to Coupling
