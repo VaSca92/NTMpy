@@ -2,8 +2,8 @@
 #   TITLE: NTMpy source
 # -----------------------------------------------------------------------------
 #        Authors: Valentino Scalera, Lukas Alber
-#        Version: 1.0
-#   Dependencies: numpy, matplotlib, bspline
+#        Version: 2.0
+#   Dependencies: numpy, matplotlib, bspline, tqdm
 # -----------------------------------------------------------------------------
 import numpy as np
 

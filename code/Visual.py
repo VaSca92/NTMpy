@@ -1,3 +1,11 @@
+# =============================================================================
+#   TITLE: NTMpy visual
+# -----------------------------------------------------------------------------
+#        Authors: Valentino Scalera, Lukas Alber
+#        Version: 2.0
+#   Dependencies: numpy, matplotlib, bspline, tqdm
+# -----------------------------------------------------------------------------
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation as movie

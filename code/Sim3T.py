@@ -1,9 +1,9 @@
 # =============================================================================
-#   TITLE: NTMpy sim2T
+#   TITLE: NTMpy sim3T
 # -----------------------------------------------------------------------------
 #        Authors: Valentino Scalera, Lukas Alber
-#        Version: 1.0
-#   Dependencies: numpy, matplotlib, bspline
+#        Version: 2.0
+#   Dependencies: numpy, matplotlib, bspline, tqdm
 # -----------------------------------------------------------------------------
 
 import numpy as np
@@ -24,86 +24,86 @@ class Sim3T(object):
 # -----------------------------------------------------------------------------
     def __init__(self):
         # Time Data
-        self.start_time  = 0
-        self.final_time  = 0
-        self.time_step   = 0
-        self.dt_ext      = []
+        self.start_time  = 0  # init. simulation time
+        self.final_time  = 0  # final simulation time
+        self.time_step   = 0  # simulation time step
+        self.dt_ext      = [] # extimated "good" time step
         # Geometric data
-        self.x          = np.array([])
-        self.y          = np.array([])
-        self.length     = [0]
-        self.grd_points = [ ]
-        self.plt_points = [ ]
-        self.order      = 5
+        self.x          = np.array([]) # points for spline generation
+        self.y          = np.array([]) # points for solution plot
+        self.length     = [0] # length of each layer
+        self.grd_points = [ ] # number of spline per layer
+        self.plt_points = [ ] # numerb of plot points per layer
+        self.order      = 5   # order of the splines
         # Electronic System
-        self.elec_K  = []
-        self.elec_C  = []
-        self.elec_QE = []
-        self.elec_QL = []
-        self.elec_QS = []
-        self.LBCT_E  = 1
-        self.RBCT_E  = 1
-        self.LBCV_E  = 0
-        self.RBCV_E  = 0
-        self.init_E  = 300
+        self.elec_K  = []  # Thermal Conductivity (electron)
+        self.elec_C  = []  # Specific Heat (electron)
+        self.elec_QE = []  # derivative of conductivity with elec. temperature
+        self.elec_QL = []  # derivative of conductivity with latt. temperature
+        self.elec_QS = []  # derivative of condictivity with spin. temperature
+        self.LBCT_E  = 1   # Left  Boundary Condition Type  ( 0 = Dirichlet )
+        self.RBCT_E  = 1   # Right Boundary Condition Type  ( 1 =   Neumann )
+        self.LBCV_E  = 0   # Left  Boundary Condition Value
+        self.RBCV_E  = 0   # Right Boundary Condition Value
+        self.init_E  = 300 # initial temperature (electron)
         # Lattice System
-        self.latt_K  = []
-        self.latt_C  = []
-        self.latt_QE = []
-        self.latt_QL = []
-        self.latt_QS = []
-        self.LBCT_L  = 1
-        self.RBCT_L  = 1
-        self.LBCV_L  = 0
-        self.RBCV_L  = 0
-        self.init_L  = 300
+        self.latt_K  = []  # Thermal Condictivity (lattice)
+        self.latt_C  = []  # Specific Heat (lattice)
+        self.latt_QE = []  # derivative of conductivity with elec. temperature
+        self.latt_QL = []  # derivative of conductivity with latt. temperature
+        self.latt_QS = []  # derivative of conductivity with spin. temperature
+        self.LBCT_L  = 1   # Left  Boundary Condition Type  ( 0 = Dirichlet )
+        self.RBCT_L  = 1   # Right Boundary Condition Type  ( 1 =   Neumann )
+        self.LBCV_L  = 0   # Left  Boundary Condition Value
+        self.RBCV_L  = 0   # Right Boundary Condition Value
+        self.init_L  = 300 # initial temperature (lattice)
         # Spin System
-        self.spin_K  = []
-        self.spin_C  = []
-        self.spin_QE = []
-        self.spin_QL = []
-        self.spin_QS = []
-        self.LBCT_S  = 1
-        self.RBCT_S  = 1
-        self.LBCV_S  = 0
-        self.RBCV_S  = 0
-        self.init_S  = 300
+        self.spin_K  = []  # Thermal Condictivity (spin)
+        self.spin_C  = []  # Specific Heat (spin)
+        self.spin_QE = []  # derivative of conductivity with elec. temperature
+        self.spin_QL = []  # derivative of conductivity with latt. temperature
+        self.spin_QS = []  # derivative of conductivity with spin. temperature
+        self.LBCT_S  = 1   # Left  Boundary Condition Type  ( 0 = Dirichlet )
+        self.RBCT_S  = 1   # Right Boundary Condition Type  ( 1 =   Neumann )
+        self.LBCV_S  = 0   # Left  Boundary Condition Value
+        self.RBCV_S  = 0   # Right Boundary Condition Value
+        self.init_S  = 300 # initial temperature (spin)
         # Coupling
-        self.GEL = []
-        self.GES = []
-        self.GLS = []
+        self.GEL = [] # Coupling between electrons and lattice
+        self.GES = [] # Coupling between electrons and spin
+        self.GLS = [] # Coupling between lattice and spin
         # Differentiation Matrices an Plot Matrix
-        self.D0 = np.zeros([0,0])
-        self.D1 = np.zeros([0,0])
-        self.D2 = np.zeros([0,0])
-        self.P0 = np.zeros([0,0])
-        self.DL = []
-        self.DR = []
+        self.D0 = np.zeros([0,0]) # Map: spline coeff. -> temperature value (computation)
+        self.D1 = np.zeros([0,0]) # Map: spline coeff. -> temperature 1st derivative
+        self.D2 = np.zeros([0,0]) # Map: spline coeff. -> temperature 2nd derivative
+        self.P0 = np.zeros([0,0]) # Map: spline coeff. -> temperature value (plot)
+        self.DL = [] # Map: spline coeff. -> derivative on the left  end of each layer
+        self.DR = [] # Map: spline coeff. -> derivative on the right end of each layer
         
         # Source
-        self.source = source()
-        self.sourceset = False
-        self.source.peak = 0
+        self.source = source() # NTMpy source object
+        self.sourceset = False # check if source is set
+        self.source.peak = 0   # default source is zero
         # Default Settings
-        self.default_Ng = 12
-        self.default_Np = 60
+        self.default_Ng = 12 # default number of splines per layer
+        self.default_Np = 60 # default number of plot points per layer
         # Maximum Temperature Expected (used in time step evaluation)
-        self.burn = 2000
+        self.burn = 2000 # I do not expect temperature to go above this
         
 
         # Incides of the interfaces/material and number of Layers
-        self.layers = 0
-        self.interfaceE = []
-        self.diffusionE = []
-        self.interfaceL = []
-        self.diffusionL = []
-        self.interfaceS = []
-        self.diffusionS = []
-        self.layer_ind  = []
+        self.layers = 0 # number of layers
+        self.interfaceE = [] # nodes where apply interface condition (elec)
+        self.diffusionE = [] # nodes where apply diffusion equation  (elec)
+        self.interfaceL = [] # nodes where apply interface condition (latt)
+        self.diffusionL = [] # nodes where apply diffusion equation  (latt)
+        self.interfaceS = [] # nodes where apply interface condition (spin)
+        self.diffusionS = [] # nodes where apply diffusion equation  (spin)
+        self.layer_ind  = [] # nodes at the layer interfaces
         # Conductivity == 0
-        self.zeroE = []
-        self.zeroL = []
-        self.zeroS = []
+        self.zeroE = []  # boolean: layer with zero conductivity (elec)
+        self.zeroL = []  # boolean: layer with zero conductivity (latt)
+        self.zeroS = []  # boolean: layer with zero conductivity (spin)
         
 
 # =============================================================================
