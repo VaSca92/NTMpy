@@ -1,10 +1,10 @@
-# =============================================================================
+# ========================================================================================
 #   TITLE: NTMpy sim2T
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 #        Authors: Valentino Scalera, Lukas Alber
 #        Version: 2.0
 #   Dependencies: numpy, matplotlib, bspline
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
 
 import numpy as np
 from bspline import Bspline
@@ -14,14 +14,14 @@ from tqdm import tqdm
 
 from Source import source
 
-# =============================================================================
+# ========================================================================================
 #
-# =============================================================================
+# ========================================================================================
 class Sim2T(object):
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def __init__(self):
         
         # Time Data
@@ -72,10 +72,10 @@ class Sim2T(object):
         self.sourceset = False # check if source is set
         self.source.peak = 0   # default source is zero
         # Default Settings
-        self.default_Ng = 12 # default number of splines per layer
-        self.default_Np = 60 # default number of plot points per layer
+        self.default_Ng =  12 # default number of splines per layer
+        self.default_Np = 100 # default number of plot points per layer
         # Maximum Temperature Expected (used in time step evaluation)
-        self.burn = 2000 # I do not expect temperature to go above this
+        self.burn = 8000 # I do not expect temperature to go above this
         
 
         # Incides of the interfaces/material and number of Layers
@@ -90,16 +90,16 @@ class Sim2T(object):
         self.zeroL = []  # boolean: layer with zero conductivity (latt)
         
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def getProperties(self): # to depict the properties of the object
         for i in (self.__dict__):
             print(i,' : ',self.__dict__[i])
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def __repr__(self):
         output  = "==============================================================================================================\n"
         output += " Simulation Object: Diffusion Equation \n"
@@ -111,11 +111,11 @@ class Sim2T(object):
         output += '  Time step : ' + str(self.time_step) + '\n'
         return output
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def addLayer(self, L, K, C, D, G = 0, Ng = False, Np = False):
-        # Add Layer to the Electron system # # # # # # # # # # # # # # # # # #
+        # Add Layer to the Electron system # # # # # # # # # # # # # # # # # # # # # # # #
         # Thermal Conductivity
         self.elec_K.append(self.lambdize2(K[0], 1, 1))
         # Heat Capacity  (specific heat * density)
@@ -124,7 +124,7 @@ class Sim2T(object):
         dummyQE = self.elec_K[-1]
         self.elec_QE.append(lambda x, y: (dummyQE(x+1e-9, y)-dummyQE(x, y))/1e-9)
         self.elec_QL.append(lambda x, y: (dummyQE(x, y+1e-9)-dummyQE(x, y))/1e-9)
-        # Add Layer to the Lattice system  # # # # # # # # # # # # # # # # # #
+        # Add Layer to the Lattice system  # # # # # # # # # # # # # # # # # # # # # # # #
         # Thermal Conductivity
         self.latt_K.append(self.lambdize2(K[-1], 1, 2))
         # Heat Capacity  (specific heat * density)
@@ -133,7 +133,7 @@ class Sim2T(object):
         dummyQL = self.latt_K[-1]
         self.latt_QE.append(lambda x, y: (dummyQL(x+1e-9, y)-dummyQL(x, y))/1e-9)
         self.latt_QL.append(lambda x, y: (dummyQL(x, y+1e-9)-dummyQL(x, y))/1e-9)
-        # Add Coupling # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # Add Coupling # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         self.G.append(self.lambdize2(G, 1, 1))
         # Detect Zeros
         self.zeroE.append(K[ 0] == 0)
@@ -146,17 +146,17 @@ class Sim2T(object):
         self.plt_points.append(Np)
 
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def setSource(self, source, n = 1):
         self.source = source
         self.sourceset = True
 
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def lambdize(self, fun, multiplyer = 1 ):
         typecheckN = type(np.array([0])[0])
         typecheckL = type(lambda x: x)
@@ -166,15 +166,15 @@ class Sim2T(object):
             return lambda x: fun*multiplyer + 0*x
 
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def lambdize2(self, fun, multiplyer = 1, arg = 1 ):
         typecheckN = type(np.array([0])[0])
         typecheckL = type(lambda x: x)
         if isinstance(fun, typecheckL):
             try:
-                dummy = fun(0,0)
+                dummy = fun(300,300)
                 return lambda x, y: fun(x,y)*multiplyer
             except:
                 if   arg == 1:
@@ -184,9 +184,9 @@ class Sim2T(object):
         elif isinstance(fun, (int, float, typecheckN)):
             return lambda x, y: fun*multiplyer + 0*x
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def build_geometry(self):
         # Switch to Instance Variables
         length     = self.length
@@ -251,9 +251,9 @@ class Sim2T(object):
         self.dt_ext = self.stability(LSM)
 
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def detect_id(self):
         
         for i in range( len(self.zeroE) - 2, -1, -1):
@@ -274,11 +274,11 @@ class Sim2T(object):
         if self.zeroL[ 0]:
             self.diffusionL[ 0, 0] -= 1
         if self.zeroL[-1]:
-            self.diffusionL[ 0, 0] += 1
+            self.diffusionL[-1,-1] += 1
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def generate_BC(self):
         # Constant for Type Checking
         typecheck = type(lambda x: x)
@@ -297,9 +297,9 @@ class Sim2T(object):
         # Return Boundary Condition
         return BC_E, BC_L
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def generate_init(self):
         # Constant for Type Checking
         typecheck = type(lambda x: x)
@@ -318,9 +318,9 @@ class Sim2T(object):
             ul = np.tile(self.init_L, len(self.y))
         return ce, ue, cl, ul
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def generate_matrix(self):
         # Matrics of Coefficient fot the Electron and Lattice System
         LHSE = self.D0.copy(); LHSL = self.D0.copy()
@@ -340,24 +340,26 @@ class Sim2T(object):
         
         return LHSE, LHSL
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def run(self):
+        
         if not self.sourceset:
             self.warning(4)
-        # ---------------------------------------------------------------------
+        # --------------------------------------------------------------------------------
         # Setup Phase: Timestep evaluation, Source Generation,
         #              Boundary Condition prepared, Adjust Coupling
-        # ---------------------------------------------------------------------
+        # --------------------------------------------------------------------------------
         self.build_geometry()
-        # Load all the Geometry Matrices --------------------------------------
+        # Load all the Geometry Matrices -------------------------------------------------
         # Rename some Instance Variables
         BCEL = not self.zeroE[0]; BCER = not self.zeroE[-1]
         BCLL = not self.zeroL[0]; BCLR = not self.zeroL[-1]
-        # STABILITY EVALUATION ################################################
+        # STABILITY EVALUATION ###########################################################
         # Calculating the preferred time step
         idealtimestep  = np.min(self.dt_ext)
+        idealtimestep  = np.min([idealtimestep, self.source.time_step_hint])
         # Warnings for missing or bad time step !!!
         if not self.time_step:
             self.time_step  = idealtimestep
@@ -369,18 +371,18 @@ class Sim2T(object):
         if self.final_time > 1: self.final_time = self.final_time*self.time_step
         # Define the time vector
         self.t = np.arange(self.start_time, self.final_time, self.time_step)
-        # Generate all the matrices ###########################################
+        # Generate all the matrices ######################################################
         LHSE, LHSL         = self.generate_matrix()
         BC_E, BC_L         = self.generate_BC()
         c_E, u_E, c_L, u_L = self.generate_init()
-        # SOURCE GENERATION ###################################################
+        # SOURCE GENERATION ##############################################################
         self.source.thickness = np.diff(self.length)
         source = self.source.matrix(self.x, self.t)
-        # ------------------------------------------- Setup ended -------------
+        # ------------------------------------------- Setup ended ------------------------
 
-        # ---------------------------------------------------------------------
+        # --------------------------------------------------------------------------------
         #  MAIN LOOP
-        # ---------------------------------------------------------------------
+        # --------------------------------------------------------------------------------
         # Rename Boundary Condition type
         LBCE = self.LBCT_E; RBCE = self.RBCT_E;
         LBCL = self.LBCT_L; RBCL = self.RBCT_L;
@@ -406,6 +408,7 @@ class Sim2T(object):
         DL = self.diffusionL
         # HERE STARTS THE MAIN LOOP
         start_EL = time.time()
+        
         for i in tqdm(range(1,len(self.t))):
             # Go from coefficient c to phi and its derivatives
             phi0_E = self.D0 @ c_E; phi0_L = self.D0 @ c_L
@@ -431,6 +434,7 @@ class Sim2T(object):
                 dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
                 dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E, phi0_L)[DE[j,0]:DE[j,1]]
                 dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_E, phi0_L)[DL[j,0]:DL[j,1]]
+                
             # Apply Heat Conservation on surfaces
             for k, j in enumerate(self.interfaceE[1:-1]): # For every interface
                 # Calculate the Flux into and out from the interface
@@ -467,9 +471,9 @@ class Sim2T(object):
         return self.y, self.t, np.rollaxis(np.dstack([phi_E, phi_L]),2)
 
 
-# =============================================================================
+# ========================================================================================
 #
-# -----------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
     def stability(self, LSM):
         # Useful Constant
         test       = np.linspace(270, self.burn, 50)
@@ -494,9 +498,9 @@ class Sim2T(object):
         # Return the smallest time step
         return min(-1.9/eigs)
 
-# =============================================================================
+# ========================================================================================
 #
-# =============================================================================
+# ========================================================================================
     def warning(self, msg, arg1 = '*missing*', arg2 = '*missing*'):
         if msg == 0:
             text = \
@@ -509,16 +513,17 @@ class Sim2T(object):
             ' Timestep = ' + arg1 + ' s\n'
         if msg == 2:
             text = \
-            ' The manually chosen time step of ' + arg1 + ' is eventually too big and could cause instabilities in the simulation.\n' + \
+            ' The manually chosen time step of ' + arg1 + ' very big and may cause instabilities in the simulation.\n' + \
             ' We suggest a timestep of ' + arg2 + ' s\n'
         if msg == 3:
             text = \
-            ' The maunually chosen time step of ' + arg1 + ' is very small and will eventually cause a long simulation time.\n' + \
-            ' We suggest a timestep of' + arg2 + ' s\n'
+            ' The maunually chosen time step of ' + arg1 + ' is very small and may slow down the simulation.\n' + \
+            ' We suggest a timestep of ' + arg2 + ' s\n'
         if msg == 4:
             text = \
             ' The source is not set, please recontrol the code. The command is sim.setsource(source)\n'
         print(\
-    '--------------------------------------------------------------------------------------------------------------\n' + \
+    '--------------------------------------------------------------------------------------------------------\n' + \
     text + \
-    '--------------------------------------------------------------------------------------------------------------\n')
+    '--------------------------------------------------------------------------------------------------------\n')
+
