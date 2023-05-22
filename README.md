@@ -27,16 +27,16 @@ We consider:
 
 The equation under consideration is: 
 
- <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationDark.png?raw=true#gh-dark-mode-only" width="960" height="120" />
- <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/EquationLight.png?raw=true#gh-light-mode-only" width="960" height="120" />
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/img/EquationDark.png?raw=true#gh-dark-mode-only" width="960" height="120" />
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/img/EquationLight.png?raw=true#gh-light-mode-only" width="960" height="120" />
  
  where </br>
- <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cap_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cap_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the specific heat </br>
- <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cond_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/cond_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the conductivity </br>
-<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/coup_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/coup_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the coupling constant between the systems (Electrons, Lattice and Spin) </br>
-<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiE_light.png?raw=true#gh-light-mode-only" width="70" height="20" />, 
-<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiL_light.png?raw=true#gh-light-mode-only" width="70" height="20" /> and 
-<img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiS_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/Pictures/phiS_light.png?raw=true#gh-light-mode-only" width="70" height="20" />
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cap_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cap_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the specific heat </br>
+ <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cond_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cond_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the conductivity </br>
+<img src="https://github.com/VaSca92/NTMpy/blob/master/img/coup_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/coup_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the coupling constant between the systems (Electrons, Lattice and Spin) </br>
+<img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiE_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiE_light.png?raw=true#gh-light-mode-only" width="70" height="20" />, 
+<img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiL_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiL_light.png?raw=true#gh-light-mode-only" width="70" height="20" /> and 
+<img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiS_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiS_light.png?raw=true#gh-light-mode-only" width="70" height="20" />
 are the respective temperatures of the electrons, lattice and spin system, functions to space *x* and time *t*.
 
 The superscripts  *L* and *E* indicate whether a parameter belongs to the electron (E) lattice (L) or spin (S) system and the sub index *i* denotes to which layer the parameter belongs.
@@ -44,7 +44,7 @@ The superscripts  *L* and *E* indicate whether a parameter belongs to the electr
   A sketch of the model: 
   
   <p align="center">
-  <img src="https://github.com/udcm-su/NTMpy/blob/master/Pictures/ThreeTMscetch.png" width="420" height="320" />
+  <img src="https://github.com/udcm-su/NTMpy/blob/master/img/ThreeTMscetch.png" width="420" height="320" />
   </p>
  
  Our approach is to use a combination of **finite elements** (B-Splines) to approximate the derivation in space and **Explicit Euler** to approximate the evolution in time.
@@ -55,7 +55,7 @@ Using the material parameters, reported in [Ultrafast Spin Dynamics in Ferromagn
  
   Temperature evolution of 3-coupled systems |  Gaussian laser pulse S(x,t) hitting sample
 :-------------------------:|:-------------------------:
- <img src="https://media.giphy.com/media/RHE9DS2kPSdobin3hv/giphy.gif" width="320" height="300" />  |  <img src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/Pictures/Source.png" width="320" height="300" />
+ <img src="https://media.giphy.com/media/RHE9DS2kPSdobin3hv/giphy.gif" width="320" height="300" />  |  <img src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/img/Source.png" width="320" height="300" />
  
 Here we consider an energy source *S(x,t)*, that is Gaussian in time and decays exponentially, representing a laser pulse hitting the material from the left. Note, that the implemented Transfer Matrix Method makes it easily able to simulate realistic laser sources, taking multiple reflection, different incident angles and polarization into account.
  
@@ -113,7 +113,7 @@ Complete documentation and example sessions can be found in the [Wiki](https://g
 
 #### With: 
 This is a project from the Ultrafast Condensed Matter physics groupe in Stockholm. The main contributors are: 
-* [Alber Lukas](https://github.com/luksen99) <img align="right" width="100" height="100" src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/Pictures/SU.jpg">  <img align="right" width="100" height="100" src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/Pictures/UDCM_logo.png">
+* [Alber Lukas](https://github.com/luksen99) <img align="right" width="100" height="100" src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/img/SU.jpg">  <img align="right" width="100" height="100" src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/img/UDCM_logo.png">
 * [Scalera Valentino](https://github.com/VaSca92) 
 * [Vivek Unikandanunni](https://github.com/VivekUUnni)
 * [UDCM Group of SU](http://udcm.fysik.su.se/)
