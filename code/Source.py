@@ -103,19 +103,20 @@ class source(object):
         thickness  = np.hstack([0, self.thickness , 1])
 
         # Compute Total Transfer Matrix
-        layer = 0; phi = 0
-        while layer < layer_num + 1 and np.exp(-phi) > 1e-16:
+        layer = 0
+        phi = 1j * thickness[0] * self.k[-1][1]
+        while layer < layer_num + 1 and np.real(phi) > -100:
 
-            phi = 1j * thickness[layer] * self.k[-1][1]            
             k, R, T = self.fresnel(self.k[-1], refraction[layer], refraction[layer+1])
             self.k.append(k)
-
             
             self.Tn.append(np.diag([np.exp(phi),np.exp(-phi)]))
             self.Rn.append( np.array([ [1,-R], [-R,1] ])/T )
             self.Mn.append( self.Rn[-1] @ self.Tn[-1] ) 
             
             layer += 1
+            phi = 1j * thickness[layer] * self.k[-1][1]
+            
         
         # Compute Waves in the Air (Avoid Backward Numerical Amplification)
         layer = 0
@@ -129,11 +130,11 @@ class source(object):
         fun_x = np.zeros(len(x))
         layer = 0
         
-        while layer < layer_num and np.abs(self.wave[-1][0]) > 1e-9:
+        while layer < len(self.Mn) - 1 and np.abs(self.wave[-1][0]) > 1e-8:
             # Update Wave at the next Interface (positive side)
             self.wave.append( self.Mn[layer] @ self.wave[-1] )
             # Avoid Numerical Instability
-            if abs(self.wave[-1][1]) < 1e-9:
+            if abs(self.wave[-1][1]) < 1e-8:
                 self.wave[-1][1] = 0
             
             # Compute Dissipation
@@ -177,14 +178,16 @@ class source(object):
         k = self.k[layer+1]
         n = self.refraction[layer]
         
+        FW = -2*np.imag(k[1])*x
+        BW = np.min(np.vstack([FW,np.tile(100,x.size)]),0)
         
         if   self.polarization.lower() == 's':
-            Sf = np.abs(EH[0])**2 * np.cos(np.angle(k[1])) * np.exp(-2*np.imag(k[1])*x)
-            Sb = np.abs(EH[1])**2 * np.cos(np.angle(k[1])) * np.exp(+2*np.imag(k[1])*x)
-            S  = np.abs(k[1]) * np.imag(k[1]) * (Sf+Sb)  
+            Sf = np.abs(EH[0])**2 * np.cos(np.angle(k[1])) * np.exp(FW)
+            Sb = np.abs(EH[1])**2 * np.cos(np.angle(k[1])) * np.exp(BW)
+            S  = np.abs(k[1]) * np.imag(k[1]) * (Sf+Sb)
         elif self.polarization.lower() == 'p':
-            Sf = np.cos(np.angle(k[1]) - 2*np.angle(n)) * np.exp(-2*np.imag(k[1])*x)
-            Sb = np.cos(np.angle(k[1]) - 2*np.angle(n)) * np.exp(+2*np.imag(k[1])*x)
+            Sf = np.cos(np.angle(k[1]) - 2*np.angle(n)) * np.exp(FW)
+            Sb = np.cos(np.angle(k[1]) - 2*np.angle(n)) * np.exp(BW)
             S  = np.abs(EH[0])**2 * Sf + np.abs(EH[1])**2 * Sb
             S *= np.abs(k[1]) * np.imag(k[1]) / np.abs(n**2)
         else:
