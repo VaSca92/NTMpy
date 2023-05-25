@@ -145,7 +145,7 @@ class source(object):
             layer += 1
             
         self.wave.append( self.Mn[-1] @ self.wave[-1] )
-        fun_x *=  self.wavelength / (2 * np.pi) 
+        fun_x *=  self.wavelength / np.pi / np.cos(self.angle)
         return fun_x
 
 # ========================================================================================
