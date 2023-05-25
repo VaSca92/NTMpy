@@ -30,6 +30,7 @@ class source(object):
         self.thickness  = [ ]
         
         self.time_step_hint = np.inf
+        self.substrate  = None
 
 
 # ========================================================================================
@@ -84,7 +85,7 @@ class source(object):
         layer_num = len(self.thickness)
         if len(self.refraction) != layer_num:
             print("!!! Source Error: Unconsistent number of layer !!!")
-            print("Number of layers:  " + str(len(layer_num)))
+            print("Number of layers:  " + str(layer_num))
             print("Number of refraction indices:  " + str(len(self.refraction)))
         
         self.wave = []
@@ -101,6 +102,8 @@ class source(object):
         
         refraction = np.hstack([1, self.refraction, 1])
         thickness  = np.hstack([0, self.thickness , 1])
+
+        refraction[-1] = self.substrate if self.substrate else 1
 
         # Compute Total Transfer Matrix
         layer = 0
