@@ -51,7 +51,7 @@ class source(object):
 # ----------------------------------------------------------------------------------------
     def grid_step_hint(self):
         if self.type_x.lower() in ["beerlambert","beer","lambert","lambertbeer","lb"]:
-            return np.min(self.absorption)/5
+            return np.min(self.absorption)/6
         return 5e-9
 
 # ========================================================================================

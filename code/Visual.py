@@ -29,7 +29,7 @@ def single_point(x, t, phi, x_pnt):
     plt.figure()
     i = np.where(x > x_pnt)[0][0]
     for k in range(phi.shape[0]):
-        plt.plot(t,phi[k,:,i])
+        plt.plot(t,phi[k,i,:])
     plt.ylabel('Amplitude')
     plt.xlabel('Time')
     plt.title('Evolution of Amplitude at one point in space')
@@ -49,11 +49,11 @@ def animated(x, t, phi, speed = 2):
     text  = ax.text(0.02, 0.95, "", transform = ax.transAxes, family='monospace')
 
     def update(frame):
-        line.set_data(x,phi[speed*frame])
+        line.set_data(x,phi[:,speed*frame])
         text.set_text("time = " + "{:10.4f}".format(t[speed*frame]) + " s")
         return line, text
 
-    frames = round(min(phi.shape[0], t.shape[0])/speed)
+    frames = round(min(phi.shape[1], t.shape[0])/speed)
     ani = movie(fig, update, frames = frames, blit = True , interval = 15, repeat = False)
     plt.grid()
     plt.show()
@@ -74,8 +74,8 @@ def compare(x, t, phi1, phi2, speed = 1):
     text = ax.text(0.02, 0.95, "", transform = ax.transAxes)
 
     def update(frame):
-        line1.set_data(x,phi1[frame*speed])
-        line2.set_data(x,phi2[frame*speed])
+        line1.set_data(x,phi1[:,frame*speed])
+        line2.set_data(x,phi2[:,frame*speed])
         text.set_text("time = " + "{:10.4}".format(t[frame*speed]) + " s")
         return line1, line2, text
 
@@ -89,7 +89,7 @@ def compare(x, t, phi1, phi2, speed = 1):
 def surface(x, t, phi):
     x, t = np.meshgrid(x[::2], t[::10])
     fig = plt.figure(); ax = fig.gca(projection='3d')
-    surf = ax.plot_surface(x,t,phi[::10,::2],cmap = 'plasma')
+    surf = ax.plot_surface(x,t,phi[::2,::10],cmap = 'plasma')
     fig.colorbar(surf,shrink=0.7, aspect=5)
     plt.xlabel('x-Space'); plt.ylabel('time'); plt.title(r'$\phi(x,t)$')
     plt.show()
@@ -102,9 +102,9 @@ def average(x, t, phi):
     dx = np.diff(x); wx = (np.insert(dx, 0, 0) + np.append(dx, 0) )/2
     if len(phi[0].shape) > 1:
         for i in range(len(phi)):
-            phi_ave = np.average(phi[i], axis = 1, weights = wx)
+            phi_ave = np.average(phi[i], axis = 0, weights = wx)
             plt.plot(t, phi_ave);
     else:
-        phi_ave = np.average(phi, axis = 1, weights = wx)
+        phi_ave = np.average(phi, axis = 0, weights = wx)
         plt.plot(t, phi_ave);
     plt.grid(); plt.show();

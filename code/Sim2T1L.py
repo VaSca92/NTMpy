@@ -324,7 +324,7 @@ class Sim2T1L(object):
         # END OF THE MAIN LOOP
         end_EL = time.time()
         self.warning(0, str(end_EL - start_EL))
-        return self.y, self.t, np.rollaxis(np.dstack([phi_E, phi_L]),2)
+        return self.y, self.t, np.transpose(np.dstack([phi_E, phi_L]))
 
 
 # ========================================================================================
