@@ -1,5 +1,5 @@
 import sys
-sys.path.insert(0, '../../')
+sys.path.insert(0, '../../Classes')
 
 from Sim2T import Sim2T
 import Visual as vs
@@ -10,8 +10,8 @@ import numpy as np
 # Create Source
 sr = source()
 sr.type_x = "lb"
-sr.absorption = [45e-9, 45e-9]
-sr.peak  = 2e+18*45e-9
+sr.absorption = [45e-9,45e-9]
+sr.peak  = 2e+13
 sr.time  = 2e-12
 sr.delay = 2e-12
 # Instantiate the Sim2T class
@@ -26,7 +26,7 @@ sim.final_time = 12e-12
 
 [x, t, phi] = sim.run()
 
-vs.compare(x,t,phi[0],phi[1], 2)
+#vs.compare(x,t,phi[0],phi[1], 2)
 
 vs.spaceVStime(x, t, phi[1])
 vs.average(x,t,phi)

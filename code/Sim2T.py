@@ -430,7 +430,7 @@ class Sim2T(object):
                 Flow_1L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]*phi1_L[DL[j,0]:DL[j,1]]
                 Flow_2L[DL[j,0]:DL[j,1]] *= phi1_L[DL[j,0]:DL[j,1]]**2
                 # Diffusion Equation
-                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[i,DE[j,0]:DE[j,1]]
+                dphi_E[DE[j,0]:DE[j,1]] = Flow_0E[DE[j,0]:DE[j,1]] + Flow_1E[DE[j,0]:DE[j,1]] + Flow_2E[DE[j,0]:DE[j,1]] + self.G[j](phi0_E[DE[j,0]:DE[j,1]], phi0_L[DE[j,0]:DE[j,1]])*(phi0_L[DE[j,0]:DE[j,1]]-phi0_E[DE[j,0]:DE[j,1]]) + source[DE[j,0]:DE[j,1],i]
                 dphi_L[DL[j,0]:DL[j,1]] = Flow_0L[DL[j,0]:DL[j,1]] + Flow_1L[DL[j,0]:DL[j,1]] + Flow_2L[DL[j,0]:DL[j,1]] + self.G[j](phi0_E[DL[j,0]:DL[j,1]], phi0_L[DL[j,0]:DL[j,1]])*(phi0_E[DL[j,0]:DL[j,1]]-phi0_L[DL[j,0]:DL[j,1]])
                 dphi_E[DE[j,0]:DE[j,1]] /= self.elec_C[j](phi0_E, phi0_L)[DE[j,0]:DE[j,1]]
                 dphi_L[DL[j,0]:DL[j,1]] /= self.latt_C[j](phi0_E, phi0_L)[DL[j,0]:DL[j,1]]

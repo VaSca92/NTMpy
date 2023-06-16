@@ -172,8 +172,11 @@ class Sim2T1L(object):
         # Select Order of the Spline (future expert setting)
         order = self.order
         # Construct the Di Matrices
-        x = np.linspace( 0, length, grd_points)
-        y = np.linspace( 0, length, plt_points)
+        ratio = length/self.source.grid_step_hint()
+        base = self.find_scale(grd_points, -ratio, ratio - 1) ** grd_points
+        x  = base**(np.linspace( 0, 1, grd_points)) - 1
+        x *= length / (base - 1)
+        y  = np.linspace( 0, length, plt_points)
         self.x = x; self.y = y
         # Spline Generation
         knot_vector = aptknt( x, order)
@@ -193,8 +196,17 @@ class Sim2T1L(object):
         LSM = self.D2 @ self.I0
         # Calculate approximated Time steps
         self.dt_ext = self.stability(LSM)
-
-
+    
+    # Sub function used to find the spacing between points
+    def find_scale(self, N, A, B):
+        x = 1.01
+        while x**N + A * x + B < 0:
+            x += .01
+        for i in range(16):
+            y  = x**N + A * x + B
+            m  = N * x**(N-1) + A
+            x -= y/m
+        return x
 # ========================================================================================
 #
 # ----------------------------------------------------------------------------------------
@@ -297,7 +309,7 @@ class Sim2T1L(object):
             self.debug[0,i] = Flow_0E[0] + Flow_1E[0] + Flow_2E[0]
             self.debug[1,i] = self.G(phi0_E[0], phi0_L[0])*(phi0_L-phi0_E)[0]
             # Diffusion Equation
-            dphi_E = Flow_0E + Flow_1E + Flow_2E + self.G(phi0_E, phi0_L)*(phi0_L-phi0_E) + source[i,1:-1]
+            dphi_E = Flow_0E + Flow_1E + Flow_2E + self.G(phi0_E, phi0_L)*(phi0_L-phi0_E) + source[1:-1,i]
             dphi_L = Flow_0L + Flow_1L + Flow_2L + self.G(phi0_E, phi0_L)*(phi0_E-phi0_L)
             dphi_E /= self.elec_C(phi0_E, phi0_L)
             dphi_L /= self.latt_C(phi0_E, phi0_L)

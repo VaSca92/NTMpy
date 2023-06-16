@@ -49,33 +49,67 @@ class source(object):
 # ========================================================================================
 #
 # ----------------------------------------------------------------------------------------
+    def grid_step_hint(self):
+        if self.type_x.lower() in ["beerlambert","beer","lambert","lambertbeer","lb"]:
+            return np.min(self.absorption)/5
+        return 5e-9
+
+# ========================================================================================
+#
+# ----------------------------------------------------------------------------------------
     def matrix(self, x, t):
 
         if not isinstance(self.absorption, list):
             self.absorption = [self.absorption]
 
-        xmg,tmg = np.meshgrid(x,t)
+
         if self.type_t.lower() in ["gaussian","gauss"]:
-            fun_t = np.exp(-(tmg-self.delay)**2/(2*self.time**2))
+            fun_t = np.tile(np.exp(-(t-self.delay)**2/(2*self.time**2)),[len(x),1])
         else:
             print("!!!  Source Error: Unknown time profile  !!!")
 
 
         if self.type_x.lower() in ["beerlambert","beer","lambert","lambertbeer","lb"]:
-            lam = 1/(self.absorption[0]*np.cos(self.angle))
-            fun_x = lam*np.exp(-lam*xmg)
+            fun_x = np.tile(self.lambert_beer(x), [len(t), 1]).T
         elif self.type_x.lower() in ["tmm","reflected","reflection"]:
-            fun_x = np.tile(self.transfer_matrix(x), [len(t), 1])
+            fun_x = np.tile(self.transfer_matrix(x), [len(t), 1]).T
         else:
             print("!!!  Source Error: Unknown space profile !!!")
 
 
         S_matrix = self.peak * fun_x * fun_t
         #Clear for boundary conditions in Simulation core
-        S_matrix[:,0] = 0; S_matrix[:,-1] = 0
+        S_matrix[0,:] = 0; S_matrix[-1,:] = 0
 
         self.stored = S_matrix
         return S_matrix
+
+# ========================================================================================
+#
+# ----------------------------------------------------------------------------------------
+    def lambert_beer(self, x):
+        
+        if len(self.absorption) == 1:
+            lamb = 1/self.absorption[0]
+            return lamb * np.exp(-lamb*x)
+        
+        layer_num = len(self.thickness)
+        wave = 1
+        fun_x = np.zeros(len(x))
+        interfaces = np.append(0, np.cumsum(self.thickness))
+        
+        for layer in range(layer_num):
+            index = np.logical_and(x > interfaces[layer], x < interfaces[layer + 1])
+            index = np.where(index)
+            depth = x[index] - interfaces[layer]
+            
+            lamb = 1/self.absorption[layer]
+            fun_x[index]  = wave * np.exp(-depth/self.absorption[layer])
+            fun_x[index] /= self.absorption[layer]
+            wave *= np.exp(-lamb*self.thickness[layer])
+        
+        return fun_x
+
 
 # ========================================================================================
 #
@@ -206,3 +240,4 @@ class source(object):
         self.time = FWHM/np.sqrt(8*np.log(2))
         self.peak = fluence/np.sqrt(2*np.pi*self.time**2)
         self.time_step_hint = FWHM/10
+

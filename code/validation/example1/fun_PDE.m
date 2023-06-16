@@ -10,16 +10,11 @@ function [c,f,s] = fun_PDE(x,t,u,dudx)
     
     f = [k1e*(x<40e-9) + k2e*(x>=40e-9); 0*dudx(2)];
     
-    lamb = 45*1e-9; J = 2e18; t0 = 2e-12; sig = 2e-12;
+    lamb = 1/(45*1e-9); J = 2e13; t0 = 2e-12; Dt = 2e-12;
     G = 5e17;
     
-    s = [J*exp(-x/(lamb))*exp(-(t-t0)^2/2/sig^2) + G*(u(2)-u(1)); G*(u(1)-u(2))]; 
+    s = [J*lamb*exp(-x*lamb)*exp(-(t-t0)^2/2/Dt^2) + G*(u(2)-u(1)); G*(u(1)-u(2))]; 
 end
 
-
-
-
-
- 
 
 
