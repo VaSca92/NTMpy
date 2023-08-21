@@ -377,7 +377,7 @@ class Sim2T(object):
         c_E, u_E, c_L, u_L = self.generate_init()
         # SOURCE GENERATION ##############################################################
         self.source.thickness = np.diff(self.length)
-        source = self.source.matrix(self.x, self.t)
+        source = self.source.create(self.x, self.t)
         # ------------------------------------------- Setup ended ------------------------
 
         # --------------------------------------------------------------------------------

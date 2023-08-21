@@ -15,7 +15,7 @@ from matplotlib.animation import FuncAnimation as movie
 # ========================================================================================
 def spaceVStime(x,t,phi):
     plt.figure()
-    plt.contourf(x,t,phi,50,cmap = 'plasma')
+    plt.contourf(x,t,phi.T,50,cmap = 'plasma')
     plt.colorbar( orientation='vertical', shrink=0.8)
     plt.xlabel('x-Space')
     plt.ylabel('time')

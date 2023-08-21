@@ -37,7 +37,7 @@ class source(object):
 #
 # ----------------------------------------------------------------------------------------
     def getProperties(self): # to depict the properties of the object
-        for i in (self.__dict__):
+        for i in self.__dict__:
             print(i,' : ',self.__dict__[i])
 
 # ========================================================================================
@@ -57,7 +57,7 @@ class source(object):
 # ========================================================================================
 #
 # ----------------------------------------------------------------------------------------
-    def matrix(self, x, t):
+    def create(self, x, t):
 
         if not isinstance(self.absorption, list):
             self.absorption = [self.absorption]
