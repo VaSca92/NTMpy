@@ -240,16 +240,12 @@ class Sim3T(object):
 #
 # ----------------------------------------------------------------------------------------
     def build_geometry(self):
-        # Switch to Instance Variables
-        length     = self.length
-        plt_points = self.plt_points
-        grd_points = self.grd_points
         # Store layer and interface number
         self.layers = len(self.length) - 1
         # Indices of the Interface points
-        IFg  = np.append( 0, np.cumsum(grd_points) )
+        IFg  = np.append( 0, np.cumsum(self.grd_points) )
         IFg -= np.arange( IFg.size )
-        IFp  = np.append( 0, np.cumsum(plt_points) )
+        IFp  = np.append( 0, np.cumsum(self.plt_points) )
         IFp -= np.arange( IFp.size )
         # Preallocate the Differentation Matrices
         self.D0 = np.zeros([IFg[-1] + 1, IFg[-1] + 1])
@@ -261,10 +257,10 @@ class Sim3T(object):
         # Layer Stability Matrix
         LSM = []
         # FOR each layer: Construct the Ai Matrices
-        for i in range( len(length) - 1):
+        for i in range( len(self.length) - 1):
             # Define Space Points
-            x = np.linspace(length[i], length[i+1] , grd_points[i])
-            y = np.linspace(length[i], length[i+1] , plt_points[i])
+            x = np.linspace(self.length[i], self.length[i+1] , self.grd_points[i])
+            y = np.linspace(self.length[i], self.length[i+1] , self.plt_points[i])
             # Spline Generation
             knot_vector = aptknt( x, order)
             basis       = Bspline(knot_vector, order)

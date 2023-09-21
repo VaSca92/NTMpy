@@ -165,18 +165,14 @@ class Sim2T1L(object):
 #
 # ----------------------------------------------------------------------------------------
     def build_geometry(self):
-        # Switch to Instance Variables
-        length     = self.length
-        plt_points = self.plt_points
-        grd_points = self.grd_points
         # Select Order of the Spline (future expert setting)
         order = self.order
         # Construct the Di Matrices
-        ratio = length/self.source.grid_step_hint()
-        base = self.find_scale(grd_points, -ratio, ratio - 1) ** grd_points
-        x  = base**(np.linspace( 0, 1, grd_points)) - 1
-        x *= length / (base - 1)
-        y  = np.linspace( 0, length, plt_points)
+        ratio = self.length/self.source.grid_step_hint()
+        base = self.find_scale(self.grd_points, -ratio, ratio - 1) ** self.grd_points
+        x  = base**(np.linspace( 0, 1, self.grd_points)) - 1
+        x *= self.length / (base - 1)
+        y  = np.linspace( 0, self.length, self.plt_points)
         self.x = x; self.y = y
         # Spline Generation
         knot_vector = aptknt( x, order)
