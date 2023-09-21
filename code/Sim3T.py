@@ -469,10 +469,6 @@ class Sim3T(object):
         # --------------------------------------------------------------------------------
         #  MAIN LOOP
         # --------------------------------------------------------------------------------
-        # Rename Boundary Condition type
-        LBCE = self.LBCT_E; RBCE = self.RBCT_E;
-        LBCL = self.LBCT_L; RBCL = self.RBCT_L;
-        LBCS = self.LBCT_S; RBCS = self.RBCT_S;
         # Initialization of the variables for the Electronic System
         phi_E    = np.zeros([len(self.t),len(self.y)])
         Flow_0E  = np.zeros( len(self.x) )
@@ -579,12 +575,12 @@ class Sim3T(object):
             RHSL = phi0_L + self.time_step * dphi_L
             RHSS = phi0_S + self.time_step * dphi_S
             # Make Room for Boundary Condition and Interface Condition
-            if BCEL: RHSE[ 0] = BC_E[0,i]/self.elec_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**LBCE
-            if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**RBCE
-            if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**LBCL
-            if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**RBCL
-            if BCLS: RHSS[ 0] = BC_S[0,i]/self.spin_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**LBCL
-            if BCLS: RHSS[-1] = BC_S[1,i]/self.spin_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**RBCL
+            if BCEL: RHSE[ 0] = BC_E[0,i]/self.elec_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**self.LBCT_E
+            if BCER: RHSE[-1] = BC_E[1,i]/self.elec_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**self.RBCT_E
+            if BCLL: RHSL[ 0] = BC_L[0,i]/self.latt_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**self.LBCT_L
+            if BCLR: RHSL[-1] = BC_L[1,i]/self.latt_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**self.RBCT_L
+            if BCLS: RHSS[ 0] = BC_S[0,i]/self.spin_K[ 0](phi0_E[ 0], phi0_L[ 0], phi0_S[ 0])**self.LBCT_L
+            if BCLS: RHSS[-1] = BC_S[1,i]/self.spin_K[-1](phi0_E[-1], phi0_L[-1], phi0_S[-1])**self.RBCT_L
             
             # Calculate the new value of the Temperature
             c_E = np.linalg.solve(LHSE,RHSE)
