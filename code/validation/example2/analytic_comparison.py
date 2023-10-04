@@ -44,11 +44,11 @@ C = G*(ke+kl)*q**2/(Ce*Cl) + q**4*(ke*kl)/(Ce*Cl)
 # Resolutive formula for 2nd grade equations
 delta = B**2-4*A*C
 
-index = np.where(phi[0][0,:] == np.max(phi[0][0,:]))[0]
+index = np.where(phi[0][:,0] == np.max(phi[0][:,0]))[0]
 
 dt = sim.time_step
-g2 = -(phi[0][-2, index]-phi[0][-1, index])/(dt*phi[0][-1, index])
-g3 = -np.log(phi[0][-2, index]/phi[0][-1, index])/dt
+g2 = -(phi[0][index, -2]-phi[0][index, -1])/(dt*phi[0][index, -1])
+g3 = -np.log(phi[0][index, -2]/phi[0][index, -1])/dt
 g1 = - (-B+np.sqrt(delta))/2
 
 
