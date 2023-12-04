@@ -1,0 +1,26 @@
+.content {
+    margin: 0 0 10 0;
+    height: 100px;
+}
+
+#laser_header {
+    background-image: linear-gradient(180deg, #c57914,#8b5713)
+}
+#laser_header:hover {
+    background-image: linear-gradient(180deg, #f09825,#ac680f)
+}
+
+#material_header {
+    background-image: linear-gradient(180deg, #31b876,#218353)
+}
+#material_header:hover {
+    background-image: linear-gradient(180deg, #2ee28b,#1aac65)
+}
+
+#plot_header {
+    background-image: linear-gradient(180deg, #3649b4,#1d2d86)
+}
+#plot_header:hover {
+    background-image: linear-gradient(180deg, #475fe7,#2135a5)
+}
+
