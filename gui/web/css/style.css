@@ -3,6 +3,7 @@ body {
   text-align: justify;
   background-color: #404040;
   font-family: 'Times New Roman','Cascadia Mono';
+  font-size: 18;
   color: #ffffff;
   padding: 0px;
   display: flex;
@@ -24,6 +25,19 @@ h1 {
   border-width: 0 0 4 0;
   border-style: solid;
   border-radius: 2px;
+}
+
+table {
+  display: grid;
+}
+
+tr {
+  display: flex;
+}
+
+td {
+  flex: 1;
+  font-size: 18;
 }
 
 #container {
@@ -119,6 +133,15 @@ input {
   justify-content: center;
 }
 
-/*#navbar a {
+#navbar a {
   max-height: 60px;
-}*/
+}
+
+button {
+  flex: 1;
+  padding: 6px;
+  text-align: center;
+  font-size: 18;
+  font-family: 'Times New Roman', 'Cascadia Mono';
+  color: #ffffff;
+}

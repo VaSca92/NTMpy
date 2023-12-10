@@ -1,6 +1,38 @@
 let layer_num = 0;
 
-function setListener() {$(".canvas > div").on("click", selectLayer);}
+
+$(document).ready( function(){
+
+    drawMaterial();
+
+    $("#insert_header").on("click", function() {
+        $("#modify_panel").slideUp(300);
+        $("#insert_panel").slideToggle(300);
+    });
+
+    $("#modify_header").on("click", function() {
+        if (layer_num > 0) {
+            $("#insert_panel").slideUp(300);
+            $("#modify_panel").slideToggle(300);    
+        }
+    });
+
+    $("#insert_panel #submit").on("click", addLayer);
+    $(".canvas > div").on("click", selectLayer);
+
+
+    console.log("ready");
+  
+
+});
+
+async function drawMaterial() {
+    layers = await eel.getLayers()();
+    let labels = [];
+    layers.reduce(function(dummy, layer) {labels.push(layer.name);}, 0);
+    await drawMaterial_core(labels);
+    $(".canvas > div").on("click", selectLayer);
+};
 
 function addLayer() {
     console.log("Adding a new layer: " +  $("#insert_panel #name_input").val());
@@ -25,7 +57,7 @@ function addLayer() {
         complete &= layer[key] != ''
     }
     if (complete) {
-        eel.setLayer(layer);
+        eel.setLayers(layer);
         $("#helpbar").css("color","#ffffff");
         $("#helpbar").text("Layer added correctly");
         $("#insert_panel input").val("");
@@ -34,8 +66,9 @@ function addLayer() {
         $("#helpbar").text("Cannot add the layer: Some material properties are missing");
     }
 
-    drawMaterial(setListener);
+    drawMaterial();
 }
+
 
 function selectLayer() {
 
@@ -59,27 +92,3 @@ function selectLayer() {
 
 
 
-$(document).ready( function(){
-
-    drawMaterial(setListener);
-
-    $("#insert_header").on("click", function() {
-        $("#modify_panel").slideUp(300);
-        $("#insert_panel").slideToggle(300);
-    });
-
-    $("#modify_header").on("click", function() {
-        if (layer_num > 0) {
-            $("#insert_panel").slideUp(300);
-            $("#modify_panel").slideToggle(300);    
-        }
-    });
-
-    $("#insert_panel #submit").on("click", addLayer);
-    $(".canvas > div").on("click", selectLayer);
-
-
-    console.log("ready");
-  
-
-});

@@ -1,26 +1,46 @@
 .content {
     margin: 0 0 10 0;
-    height: 100px;
+    display: flex;
+    flex-direction: column;
 }
 
-#laser_header {
-    background-image: linear-gradient(180deg, #c57914,#8b5713)
-}
-#laser_header:hover {
-    background-image: linear-gradient(180deg, #f09825,#ac680f)
+.button {
+    margin-top: 10px;
 }
 
-#material_header {
-    background-image: linear-gradient(180deg, #31b876,#218353)
+#table_time td:nth-child(2) {
+    padding-right: 10px;
+    padding-left: 10px;
 }
-#material_header:hover {
-    background-image: linear-gradient(180deg, #2ee28b,#1aac65)
+  
+table input {
+    width: 100%;
+}
+  
+#table_space {
+    border-style: solid;
+    border-color: #ffffff;
+    border-width: 2 0 0 0;
+    padding-top: 4px;
 }
 
-#plot_header {
-    background-image: linear-gradient(180deg, #3649b4,#1d2d86)
+#space_header, #update_space {
+    background-image: linear-gradient(180deg, #ad1e42,#641327)
 }
-#plot_header:hover {
+#space_header:hover, #update_space:hover {
+    background-image: linear-gradient(180deg, #e71a4d,#881a36)
+}
+
+#time_header, #update_time {
+    background-image: linear-gradient(180deg, #2a398d,#162266)
+}
+#time_header:hover, #update_time:hover {
     background-image: linear-gradient(180deg, #475fe7,#2135a5)
 }
 
+#plot_header {
+    background-image: linear-gradient(180deg, #498d2a,#366616)
+}
+#plot_header:hover {
+    background-image: linear-gradient(180deg, #5ce034,#40a521)
+}

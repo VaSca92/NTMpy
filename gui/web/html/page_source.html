@@ -6,30 +6,38 @@
 <div style="flex: 1;">
 
 
-    <div class="headerpanel" id="laser_header"></div>
-    <div class="content">
-        <table>
+    <div class="headerpanel" id="time_header">Time Profile</div>
+    <div class="content" id="time_panel">
+        <table id="table_time">
             <tr>
-                <td></td>
-                <td></td>
+                <td>Incident Energy:</td>
+                <td>Full Width Half Max (Gaussian):</td>
+                <td>Delay:</td>
+            </tr>
+            <tr>
+                <td><input class="energ_input"></td>
+                <td><input class="fwhmg_input"></td>
+                <td><input class="delay_input"></td>
             </tr>
         </table>
+        <button class="button" id="update_time">Update Source</button>
     </div>
 
-    <div class="headerpanel" id="material_header"></div>
-    <div class="content">
-        <table>
-            <tr>
-                <td></td>
-                <td></td>
-            </tr>
+    <div class="headerpanel" id="space_header">Space Profile</div>
+    <div class="content" id="space_panel">
+        <div style="display: flex; margin-bottom: 2px;">
+            <label style="flex: 1;">Properties of Layer: X</label>
+            <span  style="flex: 1;"><input type="radio" name="type" id="check_LBL"> Lambert Beer Law</span>
+            <span  style="flex: 1;"><input type="radio" name="type" id="check_TMM"> Transfer Matrices Method</span>
+        </div>
+        <table id="table_space">
         </table>
+        <button class="button" id="update_space">Update Source and Material</button>
     </div>
 
-    <div class="headerpanel" id="plot_header"></div>
-    <div class="content" style="display: none;">
-        <canvas></canvas>
-    </div>
+    <div class="headerpanel" id="plot_header">Plot and Save Data</div>
+    <div class="content" style="display: none;" id="plot_panel"></div>
+
 </div>
 
 {% endblock %}

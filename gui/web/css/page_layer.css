@@ -9,26 +9,6 @@
   justify-content: space-evenly;
 }
 
-button {
-  flex: 1;
-  padding: 6px;
-  text-align: center;
-  font-size: 18;
-  font-family: 'Times New Roman', 'Cascadia Mono';
-  color: #ffffff;
-}
-
-.table1 {
-  display: contents;
-}
-
-.table1 tr{
-  display: flex;
-}
-
-.table1 td {
-  flex: 1;
-}
 
 .table1 td:nth-child(2) {
   padding-right: 10px;
@@ -46,11 +26,6 @@ button {
   border-style: solid;
   border-color: #e0e0e0;
   border-width: 2 0 2 0;
-  display: grid;
-}
-
-.table2 tr{
-  display: flex;
 }
 
 .table2 tr:first-child {
@@ -60,7 +35,6 @@ button {
 }
   
 .table2 td {
-  flex: 1;
   text-align: right;
   align-items: center;
   margin: 0 0 0 10;
