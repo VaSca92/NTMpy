@@ -97,7 +97,7 @@ NTMpy was a project of the [Ultrafast Condensed Matter physics groupe](http://ud
 At the moment, only Valentino Scalera is handling the maintenance and development of NTMpy.</br>
 You can contact him via [email](mailto:valentino.scalera@uniparthenope.it) if you need help or you want to contribute.
 
-## Cite 
+## How to cite 
 Please, cite the reference [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028):</br>
 `@article{alber2020ntmpy,
     title={NTMpy: An open source package for solving coupled parabolic differential equations in the framework of the three-temperature model},
@@ -111,7 +111,7 @@ Please, cite the reference [paper](https://www.sciencedirect.com/science/article
     url = {https://www.sciencedirect.com/science/article/pii/S0010465521001028}
 }`
 
-## Dependencies:
+## Dependencies
 NTMpy has four dependencies: [Numpy](http://www.numpy.org/), [Matplotlib](https://matplotlib.org/), [B-splines](https://github.com/johntfoster), and [Progressbar](https://pypi.org/project/tqdm/2.2.3/)
 
 Note that by downloading the package via `pip install NTMpy` a routine, which automatically checks if all the required packages are existent on the local machine is implemented. If one of the dependent pip packages, listed here, is missing an automatic download is initiated.
