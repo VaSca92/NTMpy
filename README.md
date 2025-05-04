@@ -21,7 +21,7 @@ $S(x,t)$ is the energy generation/ source </br>
 The material properties $C_{Ki}(T_E,T_L,T_S)$, $k_{Ki}(T_E,T_L,T_S)$, and $G_{KH}(T_E,T_L,T_S)$ are function of the three temperatures </br>
 The dependance on temperature are non-dispersive, i.e. they depend on the temperature in the same point at the same time
 
-$$C_{Ki}(x,t) = C_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\qquad k_{Ki}(x,t) = k_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\qquad G_{KHi}(x,t) = G_{KHi}(T_E(x,t),T_L(x,t),T_S(x,t))$$
+$$C_{Ki}(x,t) = C_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\quad k_{Ki}(x,t) = k_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\quad G_{KHi}(x,t) = G_{KHi}(T_E(x,t),T_L(x,t),T_S(x,t))$$
 
 The solution is obtained using the Finite Element Method (FEM) + explicit Euler method. The FEM uses B-splines + collocation method. 
 
