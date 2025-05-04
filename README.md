@@ -1,127 +1,103 @@
-## This is not the main page of this code, please go check the principal [repository](https://github.com/udcm-su/NTMpy)
+# What does NTMpy solves
+NTMpy is a python package to solve 1D diffusion equation with 2 or 3 temperature coupled
 
-# NTMpy - N-Temperature Model solver
+The equation under consideration is:
 
+$$
+\begin{cases}
+C_{Ei}\cdot\rho_i\cdot\partial_t T_E = \partial_x(k_{Ei}\cdot\partial_xT_E)+G_{ELi}\cdot(T_L-T_E)+G_{ESi}\cdot(T_S-T_E)+S(x,t)\\
+C_{Li}\cdot\rho_i\cdot\partial_t T_L = \partial_x(k_{Li}\cdot\partial_xT_L)+G_{ELi}\cdot(T_E-T_L)+G_{LSi}\cdot(T_S-T_L)\\
+C_{Si}\cdot\rho_i\cdot\partial_t T_S = \partial_x(k_{Si}\cdot\partial_xT_S)+G_{ESi}\cdot(T_E-T_S)+G_{LSi}\cdot(T_L-T_S)
+\end{cases}
+$$
+ 
+where </br>
+$T_E(x,t)$, $T_L(x,t)$, and $T_S(x,t)$ are temperature (subscripts recall Electron, Lattice, and Spin) </br>
+$\rho$ is the mass density in the $i$-th layer of material (the material properties are piecewise homogeneous) </br>
+$C_{Ki}$ and $k_{Ki}$ are the specific heat and thermal conductivity of the system $K = E,L,S$ in the $i$-th layer of material </br>
+$G_{KHi}$ is the thermal coupling coefficient between the system $K$ and $H$ (with $K,H\in \lbrace E,L,S\rbrace$) in the $i$-th layer </br>
+$S(x,t)$ is the energy generation/ source </br>
 
-#### To download                     `pip install NTMpy`
+The material properties $C_{Ki}(T_E,T_L,T_S)$, $k_{Ki}(T_E,T_L,T_S)$, and $G_{KH}(T_E,T_L,T_S)$ are function of the three temperatures </br>
+The dependance on temperature are non-dispersive, i.e. they depend on the temperature in the same point at the same time
 
-#### To call routines in a script:   `from NTMpy import NTMpy as ntm`
+$$C_{Ki}(x,t) = C_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\qquad k_{Ki}(x,t) = k_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\qquad G_{KHi}(x,t) = G_{KHi}(T_E(x,t),T_L(x,t),T_S(x,t))$$
 
-#### To update to lates version:     `pip install --upgrade NTMpy`
+The solution is obtained using the Finite Element Method (FEM) + explicit Euler method. The FEM uses B-splines + collocation method. 
 
-Information and citation refer to [NTMpy: An open source package for solving coupled parabolic differential equations in the framework of the three-temperature model](https://www.sciencedirect.com/science/article/pii/S0010465521001028?via%3Dihub) paper.
-
-Further information on the solver package itself can be found here: [NTMpy](https://github.com/udcm-su/heat-diffusion-1D/tree/master/NTMpy).
-
-Documentation and example sessions can be found in the [Wiki](https://github.com/udcm-su/heat-diffusion-1D/wiki).
+Further informations can be found on the [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028?via%3Dihub).
 
 ------------------------------------------------------------------------------------------------------------------
 
-This is a code providing a solution to the heat diffusion in a 1D structure in a 3-temperature model approximation.
+# How to install
+The standard version of NTMpy, which follows the documentation on the original udcm-su [repository](https://github.com/udcm-su/NTMpy), can be installed via `pip install NTMpy`.</br>
+The version on this repository is a successive version, currently under development. You can use it by cloning the repository and instering the code fonder in your path or by manually importing it.
 
-We consider:
-* Material comprising piecewise homogeneous layers
-* Heating of electron system with an energy source with Gaussian or custom shape (i.e. an ultrashort laser pulse)
-* Three temperature model: electron, lattice and spin systems are considered and coupled
-* Transfer Matrix Method to account for local absorbed energy in the multi layer material
+------------------------------------------------------------------------------------------------------------------
 
-The equation under consideration is: 
+# How to use NTMpy
+NTMpy provides a set of classes to simulate coupled heat equation with 2 or 3 temperature in a multilayer system.
+The simulation parameters are customizable, but the codes can choose them automatically if not given by the user.
 
- <img src="https://github.com/VaSca92/NTMpy/blob/master/img/EquationDark.png?raw=true#gh-dark-mode-only" width="960" height="120" />
- <img src="https://github.com/VaSca92/NTMpy/blob/master/img/EquationLight.png?raw=true#gh-light-mode-only" width="960" height="120" />
- 
- where </br>
- <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cap_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cap_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the specific heat </br>
- <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cond_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/cond_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the conductivity </br>
-<img src="https://github.com/VaSca92/NTMpy/blob/master/img/coup_dark.png?raw=true#gh-dark-mode-only" width="18" height="15" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/coup_light.png?raw=true#gh-light-mode-only" width="18" height="15" /> is the coupling constant between the systems (Electrons, Lattice and Spin) </br>
-<img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiE_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiE_light.png?raw=true#gh-light-mode-only" width="70" height="20" />, 
-<img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiL_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiL_light.png?raw=true#gh-light-mode-only" width="70" height="20" /> and 
-<img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiS_dark.png?raw=true#gh-dark-mode-only" width="70" height="20" /> <img src="https://github.com/VaSca92/NTMpy/blob/master/img/phiS_light.png?raw=true#gh-light-mode-only" width="70" height="20" />
-are the respective temperatures of the electrons, lattice and spin system, functions to space *x* and time *t*.
-
-The superscripts  *L* and *E* indicate whether a parameter belongs to the electron (E) lattice (L) or spin (S) system and the sub index *i* denotes to which layer the parameter belongs.
-  
-  A sketch of the model: 
-  
-  <p align="center">
-  <img src="https://github.com/udcm-su/NTMpy/blob/master/img/ThreeTMscetch.png" width="420" height="320" />
-  </p>
- 
- Our approach is to use a combination of **finite elements** (B-Splines) to approximate the derivation in space and **Explicit Euler** to approximate the evolution in time.
- To stay within the **stability** region of the Explicit Euler algorithm, a well suited time step is automatically computed.
- 
-  ### Example:
-Using the material parameters, reported in [Ultrafast Spin Dynamics in Ferromagnetic Nickel](https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.76.4250) we consider a 3- temperature system in a Nickel layer. We are able to simulate the reported temperatuer map for all systems, in accordance with the paper.
- 
-  Temperature evolution of 3-coupled systems |  Gaussian laser pulse S(x,t) hitting sample
-:-------------------------:|:-------------------------:
- <img src="https://media.giphy.com/media/RHE9DS2kPSdobin3hv/giphy.gif" width="320" height="300" />  |  <img src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/img/Source.png" width="320" height="300" />
- 
-Here we consider an energy source *S(x,t)*, that is Gaussian in time and decays exponentially, representing a laser pulse hitting the material from the left. Note, that the implemented Transfer Matrix Method makes it easily able to simulate realistic laser sources, taking multiple reflection, different incident angles and polarization into account.
- 
-The animation clearly shows the following effects: 
-  1. The electron system heats up immediately, as expected looking at the equation above.
-  2. The heat in the electronic system diffuses along the x-axis.
-  3. The heat transfers to the subsystems on longer time scales.
-
- ### Working code: 10 Lines to run the simulation + 2 Line for the animated plot
-A short example of code to simulate a nonlinear 2 temperature model with 2 layers 
+Here is an example:
 ```python
-from NTMpy import NTMpy as ntm
-
+from Sim2T import Sim2T 
+import Visual as vs 
+from Source import source 
 
 # Initialize source
-s = ntm.source() # default option, Gaussian pulse
-s.fluence     = 1     # Energy per meter square
-s.FWHM        = 2e-12 # Full Width Half Maximum (duration of the pulse)
-s.t0          = 2e-12 # time the maximum intensity hits
-s.lambda_vac  = 400 # Wavelength of source (in nanometers)
+s = source() # default option, Gaussian pulse
+s.setLaser(5, 2e-12)
+s.delay       = 2e-12       # time the maximum intensity hits
+s.refraction  = [1,1]
+s.absorption  = [1.9e-7, 1.9e-7]
+
 
 # initialize simulation: ntm.simulation(number of temperatures, source)
-sim = ntm.simulation(2,s) # Default initial temperature: 300 Kelvin
-
+sim = Sim2T() # Default initial temperature: 300 Kelvin
+sim.setSource(s)
 
 # add material layers:
-# > non constant quantities are inserted as lambda functions
-# > if more temperature are used, conductivity and heat capacity are vectors
-# addlayer  ( Length, refractive index, conductivity, Heat Capacity, density, coupling)
-sim.addLayer( 30e-9, 1+3j, [ 8,  0], [lambda T: .112*T, 450], 6500, 6e17) # first layer
-sim.addLayer( 80e-9, 1+3j, [24, 12], [lambda T: .025*T, 730], 5100, 6e17) # second layer
+# addLayer(length, [CE, CL], [kE, kL], density, G_EL, spline_number)
+sim.addLayer( 30e-9, [ 8,  0], [lambda T: .112*T, 450], 6500, 6e17, 9)
+sim.addLayer( 80e-9, [24, 12], [lambda T: .025*T, 730], 5100, 6e17, 12)
 
 # set final simulation time (in seconds)
 sim.final_time = 50e-12
 
 # Run simulation
-[x,t,phi] = sim.run()
-
-# Link the plotting library to the simulation
-vs = ntm.visual(sim)
-# Show animation (like the one in the github page)
-vs.animation(1) # input is the animation speed
+[x, t, phi] = sim.run()
+    
+# Plot temperature
+vs.compare(x,t,phi[0],phi[1])
 ```
 
 The ouput `phi` is a 3D array with the following structure:
-* the first index selects the temperature.
-For example, `phi[0]` is the electron temperature, `phi[1]` is the lattice temperature.
-* the second index is the time instant.
-`phi[0][0]` contains the initial temperature of the electron system, `phi[0][100]` contains the electron temperature after 100 time steps.
-* the third index is the space position
-`phi[0][100][10]` is the temperature of the electron system after 100 time steps in the 10th point of the grid.
+* the first index selects the temperature: `phi[0]` is the electron temperature, `phi[1]` is the lattice temperature.
+* the second index is the time instant: `phi[0][0]` is the initial temperature, `phi[0][100]` is the temperature after 100 time steps.
+* the third index is the space position: `phi[0][100][10]` is the temperature of the temperature in the 10th point of the grid.
 
-#### Documentation
-Complete documentation and example sessions can be found in the [Wiki](https://github.com/udcm-su/heat-diffusion-1D/wiki) and on the [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028).
+------------------------------------------------------------------------------------------------------------------
 
-#### With: 
-This is a project from the Ultrafast Condensed Matter physics groupe in Stockholm. The main contributors are: 
-* [Alber Lukas](https://github.com/luksen99) <img align="right" width="100" height="100" src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/img/SU.jpg">  <img align="right" width="100" height="100" src="https://github.com/udcm-su/heat-diffusion-1D/blob/Developer/img/UDCM_logo.png">
-* [Scalera Valentino](https://github.com/VaSca92) 
+# How to contribute
+New features for NTMpy are currently under development, but with a very slow pace. A graphic interface is under development using [eel](https://github.com/python-eel/Eel).</br>
+If there is any important feature you think is missing and it is important for the experiments, you can open an issue on this repository.</br>
+If you want to contribute to the code development, you can either clone this directory or contact the author [Valentino Scalera](mailto:valentino.scalera@uniparthenope.it).</br>
+Any collaboration would be very appreciated
+
+------------------------------------------------------------------------------------------------------------------
+
+## About the authors 
+NTMpy was a project of the [Ultrafast Condensed Matter physics groupe](http://udcm.fysik.su.se/) in Stockholm. The main contributors are: 
+* [Lukas Alber](https://github.com/luksen99) 
+* [Valentino Scalera](https://github.com/VaSca92) 
 * [Vivek Unikandanunni](https://github.com/VivekUUnni)
-* [UDCM Group of SU](http://udcm.fysik.su.se/)
+* Stefano Bonetti
 
-You can directly contact us via mail: [Lukas Alber](mailto:lukas.alber@fysik.su.se), [Valentino Scalera](mailto:valentino.scalera@uniparthenope.it)
+At the moment, only Valentino Scalera is handling the maintenance and development of NTMpy.</br>
+You can contact him via [email](mailto:valentino.scalera@uniparthenope.it) if you need help or you want to contribute.
 
-
-#### Cite 
+## Cite 
 Please, cite the reference [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028):</br>
 `@article{alber2020ntmpy,
     title={NTMpy: An open source package for solving coupled parabolic differential equations in the framework of the three-temperature model},
@@ -135,25 +111,8 @@ Please, cite the reference [paper](https://www.sciencedirect.com/science/article
     url = {https://www.sciencedirect.com/science/article/pii/S0010465521001028}
 }`
 
-
-
-#### How to contribute : 
-
-Since finding the thermophysical parameters needed to solve the equation under consideration (see above) is currently subject to research, we want to encourage our users to contribute with their knowledge of parameters. That is, please **send us the data of the parameters in use, together with references from literature** ( [Lukas Alber](mailto:lukas.alber@fysik.su.se)). We are working on providing an open source data base. Also see [NTMpy](https://github.com/udcm-su/heat-diffusion-1D/edit/master/NTMpy/README.md) page.
-
-Fork from the `Developer`- branch and pull request to merge back into the original `Developer`- branch. 
-Working updates and improvements will then be merged into the `Master` branch, which will always contain the latest working version.
-
-
-#### Dependencies:
-
-[Numpy](http://www.numpy.org/)
-
-[Matplotlib](https://matplotlib.org/)
-
-[B-splines](https://github.com/johntfoster)
-
-[Progressbar](https://pypi.org/project/tqdm/2.2.3/)
+## Dependencies:
+NTMpy has four dependencies: [Numpy](http://www.numpy.org/), [Matplotlib](https://matplotlib.org/), [B-splines](https://github.com/johntfoster), and [Progressbar](https://pypi.org/project/tqdm/2.2.3/)
 
 Note that by downloading the package via `pip install NTMpy` a routine, which automatically checks if all the required packages are existent on the local machine is implemented. If one of the dependent pip packages, listed here, is missing an automatic download is initiated.
 
