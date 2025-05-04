@@ -1,0 +1,126 @@
+{% extends 'template.html' %}
+
+{% block content %}
+<script type='text/javascript' src="../js/page_material.js"></script>
+<link rel="stylesheet" type="text/css" href="../css/page_material.css">
+
+<div style="flex: 1;">
+    <div id="modify_header" class="headerpanel"> Click on a Layer to Modify</div>
+    <div id="modify_panel" class="content">
+        <div class="data_container">
+            <table class="table1">
+                <tr>
+                    <td>Name:</td>
+                    <td>Length:</td>
+                    <td>Density:</td>
+                </tr>
+                <tr>
+                    <td><input class="name_input"></td>
+                    <td><input class="leng_input"></td>
+                    <td><input class="dens_input"></td>
+                </tr>
+            </table>
+            <table class="table2">
+                <tr>
+                    <td></td>
+                    <td>Electron</td>
+                    <td>Lattice</td>
+                </tr>
+                <tr>
+                    <td>Thermal Conductivity :</td>
+                    <td>
+                        <div><input class="K_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                    <td>
+                        <div><input class="K_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Thermal Capacity :</td>
+                    <td>
+                        <div><input class="C_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                    <td>
+                        <div><input class="C_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                </tr>
+            
+            </table>
+            <span class="table3">
+                <label>Coupling:</label>
+                <input style="flex: 1;" class="G_input">
+                <button class="help_btn">Help</button>
+            </span>
+            <span style="display: flex; flex-direction: row;">
+                <button class="button" id="update">Update Layer</button>
+            </span>
+            <span style="display: flex; flex-direction: row;">
+                <button class="button" id="moveL">Move Layer to Left</button>
+                <button class="button" id="destroy">Destroy Layer</button>
+                <button class="button" id="moveR">Move Layer to Right</button>
+            </span>
+        </div>
+    </div>    
+    
+
+    <div id="insert_header" class="headerpanel">New Layer Menu</div>
+    <div id="insert_panel" class="content" style="display:flex">
+        <div class="data_container">
+            <table class="table1">
+                <tr>
+                    <td>Name:</td>
+                    <td>Length:</td>
+                    <td>Density:</td>
+                </tr>
+                <tr>
+                    <td><input class="name_input"></td>
+                    <td><input class="leng_input"></td>
+                    <td><input class="dens_input"></td>
+                </tr>
+            </table>
+            <table class="table2">
+                <tr>
+                    <td></td>
+                    <td>Electron</td>
+                    <td>Lattice</td>
+                </tr>
+                <tr>
+                    <td>Thermal Conductivity :</td>
+                    <td>
+                        <div><input class="K_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                    <td>
+                        <div><input class="K_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Thermal Capacity :</td>
+                    <td>
+                        <div><input class="C_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                    <td>
+                        <div><input class="C_input"></div>
+                        <button class="help_btn">Help</button>
+                    </td>
+                </tr>
+            
+            </table>
+            <span class="table3">
+                <label>Coupling:</label>
+                <input style="flex: 1;" class="G_input">
+                <button class="help_btn">Help</button>
+            </span>
+            <button class="button" id="submit">Add Layer</button>
+        </div>
+    </div>
+    
+</div>
+{% endblock %}
+ 
