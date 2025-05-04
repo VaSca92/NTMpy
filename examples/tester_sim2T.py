@@ -1,14 +1,14 @@
 import sys
-sys.path.insert(0, '../Classes/')
+sys.path.insert(0, './code/')
 
-from Sim2T import Sim2T
-import Visual as vs
-from Source import source
+from Sim2T import Sim2T # type: ignore
+import Visual as vs # type: ignore
+from Source import source # type: ignore
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-case = 1
+case = 2
 
 if case == 1:
 
@@ -36,11 +36,11 @@ if case == 1:
     vs.average(x,t,phi)
     
 
-elif case == 3:
-    # Case 3 ==================================================================
+elif case == 2:
+    # Case 2 ==================================================================
     # Initialize source
     s = source() # default option, Gaussian pulse
-    s.setLaser(1, 2e-12)
+    s.setLaser(5, 2e-12)
     s.delay       = 2e-12       # time the maximum intensity hits
     s.refraction  = [1,1]
     s.absorption  = [1.9e-7, 1.9e-7]
@@ -59,12 +59,13 @@ elif case == 3:
 
     # Run simulation
     [x, t, phi] = sim.run()
-
-    vs.average(x,t,phi)
+    
+    # Plot temperature
+    vs.compare(x,t,phi[0],phi[1])
 
     # -------------------------------------------------------------------------
 
-elif case == 4:
+elif case == 3:
     # Setup source
     s = source()
     s.setLaser(60, .2e-12)
