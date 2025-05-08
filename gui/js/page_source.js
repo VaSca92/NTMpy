@@ -4,6 +4,8 @@ let reflection;
 let nindex;
 let source;
 
+let data;
+
 $(document).ready(function() {
 
     $("#time_header").on("click", function() {
@@ -26,7 +28,11 @@ $(document).ready(function() {
     $("#check_TMM").on("click", function() {reflection =  true; eel.setFlags("reflection",  true); drawPage();})
 
     $("#update_space").on("click", modifyIndexN);
-    $("#update_time").on("click", setSource);
+    $("#update_time" ).on("click", setSource);
+
+    $("#plot_space").on("click", plotSpace);
+    $("#plot_time" ).on("click", plotTime );
+
 
     drawPage();
 
@@ -97,7 +103,6 @@ function selectLayer() {
 
 }
 
-
 function setSource() {
     energy = $("#table_time input:eq(0)").val();
     fwhm   = $("#table_time input:eq(1)").val();
@@ -124,4 +129,12 @@ function modifyIndexN() {
     }
 
     drawPage()
+}
+
+function plotTime() {
+    data = eel.plot_src_t();
+}
+
+function plotSpace() {
+    data = eel.plot_src_x();
 }
