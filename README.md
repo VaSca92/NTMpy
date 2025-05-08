@@ -21,7 +21,13 @@ $S(x,t)$ is the energy generation/ source </br>
 The material properties $C_{Ki}(T_E,T_L,T_S)$, $k_{Ki}(T_E,T_L,T_S)$, and $G_{KH}(T_E,T_L,T_S)$ are function of the three temperatures </br>
 The dependance on temperature are non-dispersive, i.e. they depend on the temperature in the same point at the same time
 
-$$C_{Ki}(x,t) = C_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\qquad k_{Ki}(x,t) = k_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\ ,\qquad G_{KHi}(x,t) = G_{KHi}(T_E(x,t),T_L(x,t),T_S(x,t))$$
+$$
+\begin{aligned}
+C_{Ki}(x,t) = C_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\\
+k_{Ki}(x,t) = k_{Ki}(T_E(x,t),T_L(x,t),T_S(x,t))\\
+G_{KHi}(x,t) = G_{KHi}(T_E(x,t),T_L(x,t),T_S(x,t))
+\end{aligned}
+$$
 
 The solution is obtained using the Finite Element Method (FEM) + explicit Euler method. The FEM uses B-splines + collocation method. 
 
@@ -95,7 +101,7 @@ NTMpy was a project of the [Ultrafast Condensed Matter physics groupe](http://ud
 * Stefano Bonetti
 
 At the moment, only Valentino Scalera is handling the maintenance and development of NTMpy.</br>
-You can contact him via [email](mailto:valentino.scalera@uniparthenope.it) if you need help or you want to contribute.
+You can contact me via [email](mailto:valentino.scalera@uniparthenope.it) if you need help or you want to contribute.
 
 ## Cite 
 Please, cite the reference [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028):</br>
