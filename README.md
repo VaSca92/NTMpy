@@ -100,7 +100,7 @@ NTMpy was a project of the [Ultrafast Condensed Matter physics groupe](http://ud
 * Stefano Bonetti
 
 At the moment, only Valentino Scalera is handling the maintenance and development of NTMpy.</br>
-You can contact him via [email](mailto:valentino.scalera@uniparthenope.it) if you need help or you want to contribute.
+You can contact me via [email](mailto:valentino.scalera@uniparthenope.it) if you need help or you want to contribute.
 
 ## How to cite 
 Please, cite the reference [paper](https://www.sciencedirect.com/science/article/pii/S0010465521001028):</br>

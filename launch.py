@@ -18,7 +18,7 @@ layers = []
 nindex = []
 
 src = source()
-srcplt = []
+data = []
 
 # Material properties interfaces #################
 @eel.expose
@@ -79,18 +79,16 @@ def source():
 @eel.expose
 def plot_src_x():
     src_init()
-    #total_leng = np.sum([ layer["length"] for layer in layers])
-    #total_time = 4*laser["fwhm"] + laser["delay"]
-    #srcplt = src.create(np.linspace(0,total_leng,128), np.linspace(0, total_time, 128))
-        
+    total_leng = np.sum([ layer["length"] for layer in layers])
+    data["src"] = src.create(np.linspace(0,total_leng,128), np.array([src.delay]))
+    return data
 
 @eel.expose
 def plot_src_t():
     src_init()
-    #total_leng = np.sum([ layer["length"] for layer in layers])
-    #total_time = 4*laser["fwhm"] + laser["delay"]
-    #srcplt = src.create(np.linspace(0,total_leng,128), np.linspace(0, total_time, 128))
-        
+    total_time = 4*laser["fwhm"] + laser["delay"]
+    data["src"] = src.create( np.array([0]), np.linspace(0, total_time, 128))
+    return data    
 
 # Absorption / Refraction interface ##############
 @eel.expose
@@ -134,7 +132,7 @@ def src_init():
         #total_leng = np.sum([ layer["length"] for layer in layers])
         #total_time = 4*laser["fwhm"] + laser["delay"]
         #srcplt = src.create(np.linspace(0,total_leng,128), np.linspace(0, total_time, 128))
-        flags["source_set"] = True
+        #flags["source_set"] = True
 
 
 eel.init('.', allowed_extensions=['.js', '.html', '.css'])
