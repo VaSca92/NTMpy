@@ -18,7 +18,7 @@ layers = []
 nindex = []
 
 src = source()
-data = []
+data = {"src": None}
 
 # Material properties interfaces #################
 @eel.expose
