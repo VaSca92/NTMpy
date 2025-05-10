@@ -4,7 +4,7 @@ sys.path.insert(0, './gui/python')
 import eel
 
 
-import init_variables # type: ignore
+import variables # type: ignore
 import fun_material # type: ignore
 import fun_source # type: ignore
 
