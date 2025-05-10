@@ -131,10 +131,10 @@ function modifyIndexN() {
     drawPage()
 }
 
-function plotTime() {
-    data = eel.plot_src_t();
+async function plotTime() {
+    data = await eel.plot_src_t()();
 }
 
-function plotSpace() {
-    data = eel.plot_src_x();
+async function plotSpace() {
+    data = await eel.plot_src_x()();
 }
