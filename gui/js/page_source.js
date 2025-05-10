@@ -132,7 +132,7 @@ function modifyIndexN() {
 }
 
 async function plotTime() {
-    data = await eel.plot_src_t()();
+    drawCurve(await eel.plot_src_t()());   
 }
 
 async function plotSpace() {

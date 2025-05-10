@@ -29,18 +29,21 @@ def getSource():
 def source():
     pass
 
+# Plotting source ################################
 @eel.expose
 def plot_src_x():
     src_init()
     total_leng = np.sum([ layer["length"] for layer in layers])
-    return src.create(np.linspace(0,total_leng,128), np.array([src.delay]))
+    array = src.lambert_beer(np.linspace(0,total_leng,128))
+    return [float(x) for x in array]
+    
 
 @eel.expose
 def plot_src_t():
     src_init()
-    total_time = 4*laser["fwhm"] + laser["delay"]
-    return src.create( np.array([0]), np.linspace(0, total_time, 128))
-   
+    total_time = 2*laser["fwhm"] + laser["delay"]
+    array = src.gaussian(np.linspace(0, total_time, 128))
+    return [float(x) for x in array]
 
 # Absorption / Refraction interface ##############
 @eel.expose

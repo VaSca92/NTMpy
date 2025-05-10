@@ -16,12 +16,9 @@ def run():
 
 # Util and Functions
 def src_init():
-    if not flags["source_set"]:
+    if not flags["source_set"] or True:
         src.angle = 0
         src.setLaser(float(laser["energy"]), float(laser["fwhm"]))
         src.absorption = [float(n["l"]) for n in nindex]
         src.delay = float(laser["delay"])
-        #total_leng = np.sum([ layer["length"] for layer in layers])
-        #total_time = 4*laser["fwhm"] + laser["delay"]
-        #srcplt = src.create(np.linspace(0,total_leng,128), np.linspace(0, total_time, 128))
-        #flags["source_set"] = True
+        src.thickness = [float(layer["length"]) for layer in layers]
