@@ -1,5 +1,5 @@
 import eel
-from init_variables import flags, laser, layers, nindex, sim, src
+from gui.python.variables import flags, laser, layers, nindex, sim, src
 
 
 # Run Simulation #################################
