@@ -6,7 +6,7 @@
         "source_set": true,
         "almost_set": true,
         "layers_set": true,
-        "result_set": true
+        "result_set": false
     },
     "laser": {
         "energy": 60,
