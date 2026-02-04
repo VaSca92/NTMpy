@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-case = 2
+case = 4
 
 if case == 1:
 
@@ -107,10 +107,10 @@ elif case == 3:
     sim = Sim2T()
     sim.setSource(s)
 
-    sim.addLayer(length_Pt,[k_el_Pt,k_el_Pt],[C_el_Pt,C_lat_Pt],rho_Pt,[G_Pt],12)
-    sim.addLayer(100e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,[G_Si],15)
-    sim.addLayer(400e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,[G_Si],15)
-    sim.addLayer(1600e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,[G_Si],15)
+    sim.addLayer(length_Pt,[k_el_Pt,k_el_Pt],[C_el_Pt,C_lat_Pt],rho_Pt,G_Pt,12)
+    sim.addLayer(100e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,G_Si,15)
+    sim.addLayer(400e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,G_Si,15)
+    sim.addLayer(1600e-9,[k_el_Si,k_lat_Si],[C_el_Si,C_lat_Si],rho_Si,G_Si,15)
 
     sim.final_time = 6e-12
     [x, t, T] = sim.run()
@@ -120,10 +120,36 @@ elif case == 3:
     vs.average(x,t,T)
 
     exp_weights = np.exp(-x/1e-8)
-    avT_E = np.average(T_e,axis = 1, weights = exp_weights)
-    avT_L = np.average(T_l,axis = 1, weights = exp_weights)
+    avT_E = np.average(T_e,axis = 0, weights = exp_weights)
+    avT_L = np.average(T_l,axis = 0, weights = exp_weights)
     avT_tot = (avT_E + avT_L - 600)
 
     plt.figure()
     plt.plot(t*1e12, avT_tot)
     plt.grid()
+
+elif case == 4:
+    # Case 4 ==================================================================
+    sim = Sim2T()
+    sim.addLayer(10e-9, [ 72, 72], [lambda T: 740*T, 2.78e6], 1, 2.5e17, 15)
+    sim.addLayer( 1e-6, [130,130], [lambda T: 150*T, 1.60e6], 1, 18e17, 15)
+    
+    src = source()
+    src.setLaser(60, .1e-12)
+    src.delay = 2e-12
+    src.angle = np.pi/4
+    src.wavelength = 400e-9
+    src.polarization  = 'p'
+    src.refraction = [1.7176+2.844j, 5.57+0.39j]
+    sim.setSource(src)
+    
+    sim.final_time = 5e-12
+    
+    [x, t, T] = sim.run()
+    
+    
+    
+    
+    
+    
+    

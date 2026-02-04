@@ -79,19 +79,24 @@ def loadFile(filename="ntmpy_save"):
 
         if flags["result_set"] and not flags["spin_temp"]:
             outdir[0] = "../output/" if path == "./data/models/" else ""
-            with load(path + outdir[0] + current_file[0] + ".npz") as data:
-                out["t"] = data["t"]
-                out["x"] = data["x"]
-                out["T"] = [data["Te"], data["Tl"]]
-                return("Successfully loaded from " + filename + ".json and " + current_file[0] + ".npz")
+            try: 
+                with load(path + outdir[0] + current_file[0] + ".npz") as data:
+                    out["t"] = data["t"]
+                    out["x"] = data["x"]
+                    out["T"] = [data["Te"], data["Tl"]]
+                    return("Successfully loaded from " + current_file[0] + ".json and " + current_file[0] + ".npz")
+            except FileNotFoundError:
+                return("Successfully loaded from " + current_file[0] + ".json")
         elif flags["result_set"] and flags["spin_temp"]:
             outdir[0] = "../output/" if path == "./data/models/" else ""
-            with load(path + outdir[0] + current_file[0] + ".npz") as data:
-                out["t"] = data["t"]
-                out["x"] = data["x"]
-                out["T"] = [data["Te"], data["Tl"], data["Ts"]]
-                return("Successfully loaded from " + filename + ".json and " + current_file[0] + ".npz")
-        return("Successfully loaded from " + filename)
+            try:
+                with load(path + outdir[0] + current_file[0] + ".npz") as data:
+                    out["t"] = data["t"]
+                    out["x"] = data["x"]
+                    out["T"] = [data["Te"], data["Tl"], data["Ts"]]
+                    return("Successfully loaded from " + current_file[0] + ".json and " + current_file[0] + ".npz")
+            except FileNotFoundError:
+                return("Successfully loaded from " + current_file[0] + ".json")
     except FileNotFoundError:
         return("Error: File " + filename + " not found.")
     except Exception as e:
