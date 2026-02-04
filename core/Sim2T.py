@@ -352,8 +352,8 @@ class Sim2T(object):
         if self.RBCT_L == 1 and not self.zeroL[-1]:
             LHSL[-1, -self.grd_points[-1]:] =  self.DR[-1].copy()
         
-        LHSE[self.interfaceE[+1:-1]] = 0;
-        LHSL[self.interfaceL[+1:-1]] = 0;    
+        LHSE[self.interfaceE[+1:-1]] = 0
+        LHSL[self.interfaceL[+1:-1]] = 0
         
         return LHSE, LHSL
 

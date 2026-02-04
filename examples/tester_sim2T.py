@@ -1,9 +1,9 @@
 import sys
-sys.path.insert(0, './code/')
+sys.path.insert(0, '../')
 
-from Sim2T import Sim2T # type: ignore
-import Visual as vs # type: ignore
-from Source import source # type: ignore
+from core.Sim2T import Sim2T # type: ignore
+import core.Visual as vs # type: ignore
+from core.Source import source # type: ignore
 import numpy as np
 import matplotlib.pyplot as plt
 
