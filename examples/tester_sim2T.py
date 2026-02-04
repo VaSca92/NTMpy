@@ -133,6 +133,7 @@ elif case == 4:
     sim = Sim2T()
     sim.addLayer(10e-9, [ 72, 72], [lambda T: 740*T, 2.78e6], 1, 2.5e17, 15)
     sim.addLayer( 1e-6, [130,130], [lambda T: 150*T, 1.60e6], 1, 18e17, 15)
+    sim.substrate = True
     
     src = source()
     src.setLaser(60, .1e-12)
