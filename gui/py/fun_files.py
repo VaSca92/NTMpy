@@ -36,6 +36,7 @@ def saveFile(filename="ntmpy_save", path="./data/models/"):
 def loadFile(filename="ntmpy_save"):
 
     path = current_path[0]
+    print("loading file: ", path + filename)
 
     try:
         with open(path + filename, 'r') as f:
@@ -97,6 +98,8 @@ def loadFile(filename="ntmpy_save"):
                     return("Successfully loaded from " + current_file[0] + ".json and " + current_file[0] + ".npz")
             except FileNotFoundError:
                 return("Successfully loaded from " + current_file[0] + ".json")
+        else: 
+            return("Successfully loaded from " + current_file[0] + ".json")
     except FileNotFoundError:
         return("Error: File " + filename + " not found.")
     except Exception as e:
